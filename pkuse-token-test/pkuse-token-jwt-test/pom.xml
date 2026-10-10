@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-test</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <packaging>jar</packaging>
+
+	<name>pkuse-token-jwt-test</name>
+    <artifactId>pkuse-token-jwt-test</artifactId>
+	<description>pkuse-token-jwt-test</description>
+
+	<dependencies>
+		<!-- 原 sa-token-spring-boot-starter（SB2）已不存在，基线暂切 SB3 starter + 显式 web 依赖 -->
+		<dependency>
+			<groupId>com.bdsoft</groupId>
+			<artifactId>pkuse-token-spring-boot3-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.bdsoft</groupId>
+			<artifactId>pkuse-token-jwt</artifactId>
+		</dependency>
+	</dependencies>
+
+</project>

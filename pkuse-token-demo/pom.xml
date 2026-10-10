@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.bdsoft</groupId>
+	<artifactId>pkuse-token-demo</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+
+	<!-- 所有子模块：全部运行在 com.bdsoft 构件上 -->
+	<modules>
+		<!-- SSO 家族 -->
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso-server</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso1-client</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso2-client</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-nosdk</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-resdk</module>
+		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-anon</module>
+		<!-- 认证相关 -->
+		<module>pkuse-token-demo-oauth2/pkuse-token-demo-oauth2-server</module>
+		<module>pkuse-token-demo-oauth2/pkuse-token-demo-oauth2-client</module>
+		<module>pkuse-token-demo-remember-me/pkuse-token-demo-remember-me-server</module>
+		<module>pkuse-token-demo-device-lock</module>
+		<module>pkuse-token-demo-jwt</module>
+		<!-- SB3 基线 -->
+		<module>pkuse-token-demo-springboot3-redis</module>
+		<module>pkuse-token-demo-alone-redisson-sb3</module>
+    </modules>
+
+</project>

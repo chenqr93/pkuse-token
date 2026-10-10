@@ -1,0 +1,24 @@
+# 端口
+server:
+    port: 9001
+
+# Sa-Token 配置 
+sa-token:
+    # 打印操作日志
+    is-log: true
+
+    # SSO-相关配置
+    sso-client:
+        # client 标识
+        client: sso-client1
+        # SSO-Server端主机地址
+        server-url: http://sso.stp.com:9000
+    
+    # 配置 Sa-Token 单独使用的Redis连接（此处需要和 SSO-Server 端连接同一个 Redis）
+    # 注：使用 alone-redisson 需要在 pom.xml 引入 pkuse-token-alone-redisson 依赖
+    alone-redisson:
+        # Redisson 连接配置（YAML 格式），不配置时默认 127.0.0.1:6379
+        config: |
+            singleServerConfig:
+              address: "redis://127.0.0.1:6379"
+              database: 1

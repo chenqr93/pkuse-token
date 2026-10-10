@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.bdsoft</groupId>
+		<artifactId>pkuse-token-bom</artifactId>
+		<version>${revision}</version>
+		<!-- 寻址 -->
+		<relativePath>../pkuse-token-bom/pom.xml</relativePath>
+	</parent>
+	<packaging>pom</packaging>
+
+    <artifactId>pkuse-token-dependencies</artifactId>
+    <name>pkuse-token-dependencies</name>
+    <description>Pkuse-Token Dependencies</description>
+
+    <properties>
+		<!-- 第三方依赖版本号 -->
+		<!-- SB3 线（3.5.x）的 JacksonAutoConfiguration 需要 2.15+，且 databind 与 jsr310 保持同 minor -->
+		<jackson-databind.version>2.19.2</jackson-databind.version>
+		<jackson-datatype-jsr310.version>2.19.2</jackson-datatype-jsr310.version>
+		<jakarta-servlet-api.version>6.0.0</jakarta-servlet-api.version>
+		<redisson.version>3.45.0</redisson.version>
+		<netty.version>4.1.125.Final</netty.version>
+		<jackson-core.version>2.21.4</jackson-core.version>
+		<spring.version>6.2.11</spring.version>
+		<hutool-jwt.version>5.8.36</hutool-jwt.version>
+
+		<!-- Maven GPG Plugin -->
+		<maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
+		<!-- Maven Central Portal -->
+		<central.publishing.maven.version>0.7.0</central.publishing.maven.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+
+			<!-- Jakarta Servlet API -->
+			<dependency>
+				<groupId>jakarta.servlet</groupId>
+				<artifactId>jakarta.servlet-api</artifactId>
+				<version>${jakarta-servlet-api.version}</version>
+			</dependency>
+
+			<!-- jackson2 databind -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-databind</artifactId>
+	      	  	<version>${jackson-databind.version}</version>
+			</dependency>
+
+
+			<!-- jackson-datatype-jsr310 -->
+			<dependency>
+				<groupId>com.fasterxml.jackson.datatype</groupId>
+				<artifactId>jackson-datatype-jsr310</artifactId>
+				<version>${jackson-datatype-jsr310.version}</version>
+			</dependency>
+
+			<!-- Redisson 相关操作API -->
+			<dependency>
+				<groupId>netty-codec</groupId>
+				<artifactId>io.netty</artifactId>
+				<version>${netty.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson-core.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-core</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-beans</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-context</artifactId>
+				<version>${spring.version}</version>
+			</dependency>
+
+
+			<dependency>
+				<groupId>org.redisson</groupId>
+				<artifactId>redisson</artifactId>
+				<exclusions>
+					<exclusion>
+						<groupId>io.netty</groupId>
+						<artifactId>netty-codec</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>com.fasterxml.jackson.core</groupId>
+						<artifactId>jackson-core</artifactId>
+					</exclusion>
+				</exclusions>
+				<version>${redisson.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.redisson</groupId>
+				<artifactId>redisson-spring-boot-starter</artifactId>
+				<version>${redisson.version}</version>
+			</dependency>
+
+			<!-- hutool-jwt -->
+	        <dependency>
+			    <groupId>cn.hutool</groupId>
+			    <artifactId>hutool-jwt</artifactId>
+			    <version>${hutool-jwt.version}</version>
+			</dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

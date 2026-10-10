@@ -5,62 +5,38 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- 基础信息 -->
-    <groupId>cn.dev33</groupId>
-    <artifactId>sa-token-parent</artifactId>
+    <groupId>com.bdsoft</groupId>
+    <artifactId>pkuse-token</artifactId>
 	<packaging>pom</packaging>
 	<version>${revision}</version>
 	
 	<!-- 项目介绍 -->
-	<name>sa-token</name>
-	<description>An open-source, free, and one-stop Java authentication framework that makes authentication simple and elegant!</description>
-	<url>https://github.com/dromara/sa-token</url>
+	<name>pkuse-token</name>
+	<description>产品研发部Token认证框架!</description>
 
-	
 	<!-- 所有模块 -->
 	<modules>
-		<module>sa-token-dependencies</module>
-		<module>sa-token-special-dependencies</module>
-		<module>sa-token-bom</module>
-		<module>sa-token-core</module>
-		<module>sa-token-starter</module>
-		<module>sa-token-plugin</module>
+		<module>pkuse-token-dependencies</module>
+		<module>pkuse-token-special-dependencies</module>
+		<module>pkuse-token-bom</module>
+		<module>pkuse-token-core</module>
+		<module>pkuse-token-starter</module>
+		<module>pkuse-token-plugin</module>
 	</modules>
 
-	<!-- 开源协议 apache 2.0 -->
-	<licenses>
-		<license>
-			<name>Apache 2</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-			<comments>A business-friendly OSS license</comments>
-		</license>
-	</licenses>
-	
 	<!-- 一些属性 -->
 	<properties>
         <revision>1.46.0</revision>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>17</jdk.version>
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
 
-		<!-- Maven GPG Plugin & Maven Central Portal -->
-		<maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
-		<central.publishing.maven.version>0.10.0</central.publishing.maven.version>
 	</properties>
-
-	<!-- 仓库信息 -->
-	<scm>
-		<tag>master</tag>
-		<url>https://github.com/dromara/sa-token.git</url>
-		<connection>scm:git:https://github.com/dromara/sa-token.git</connection>
-		<developerConnection>scm:git:https://github.com/dromara/sa-token.git</developerConnection>
-	</scm>
 	
 	<!-- 作者信息 -->
 	<developers>
 		<developer>
-			<name>click33</name>
-			<email>2393584716@qq.com</email>
+			<name>eric</name>
 		</developer>
 	</developers>
 	
@@ -73,12 +49,12 @@
 		<dependencies>
 
 			<!--
-			 	导入 sa-token-dependencies 所有版本定义，并传导到每个子项目。
+			 	导入 pkuse-token-dependencies 所有版本定义，并传导到每个子项目。
 			 	需要注意的是：该 import 只会导入 <dependencyManagement> 部分，而不会导入 <dependencies> 部分和 <properties> 部分。
 			 -->
 			<dependency>
-				<groupId>cn.dev33</groupId>
-				<artifactId>sa-token-dependencies</artifactId>
+				<groupId>com.bdsoft</groupId>
+				<artifactId>pkuse-token-dependencies</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
@@ -98,8 +74,10 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.15.0</version>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<source>17</source>
+					<target>17</target>
+					<!-- Spring 6 必须：注解不写参数名时靠 -parameters 反射取参 -->
+					<parameters>true</parameters>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
@@ -130,22 +108,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
-			<!-- 新版 Central Portal 中央仓库上传   -->
-			<plugin>
-				<groupId>org.sonatype.central</groupId>
-				<artifactId>central-publishing-maven-plugin</artifactId>
-				<version>${central.publishing.maven.version}</version>
-				<extensions>true</extensions>
-				<configuration>
-					<!-- 必须与 settings.xml 中 server 的 id 一致 -->
-					<publishingServerId>central</publishingServerId>
-					<!-- 是否自动发布。设为 true 后，上传完成无需手动点击发布 -->
-					<!-- <autoPublish>true</autoPublish> -->
-					<!-- 等待直到发布完成，让构建过程等待最终结果 -->
-					<!-- <waitUntil>published</waitUntil> -->
-				</configuration>
-		   	</plugin>
 
 	   	</plugins>
 
@@ -180,65 +142,4 @@
 
 	</build>
 
-	<!-- 仅发 Maven 中央时启用，日常 package / install 不跑 -->
-	<profiles>
-		<profile>
-			<id>sonatype-oss-release</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-source-plugin</artifactId>
-						<version>3.4.0</version>
-						<configuration>
-							<attach>true</attach>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-sources</id>
-								<goals>
-									<goal>jar-no-fork</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>3.12.0</version>
-						<configuration>
-							<failOnError>false</failOnError>
-							<failOnWarnings>false</failOnWarnings>
-							<additionalOptions>-Xdoclint:none</additionalOptions>
-							<detectLinks>false</detectLinks>
-							<doclint>none</doclint>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>${maven-gpg-plugin.version}</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-	
 </project>

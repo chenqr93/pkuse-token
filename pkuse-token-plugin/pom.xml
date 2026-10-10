@@ -1,0 +1,50 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+   
+	<parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <packaging>pom</packaging>
+    
+	<name>pkuse-token-plugin</name>
+    <artifactId>pkuse-token-plugin</artifactId>
+	<description>pkuse-token plugins</description>
+	
+	<!-- 所有子模块 -->
+    <modules>
+        <!-- 通用插件 -->
+        <module>pkuse-token-jackson</module>
+        <module>pkuse-token-jwt</module>
+        <module>pkuse-token-sso</module>
+        <module>pkuse-token-oauth2</module>
+        <module>pkuse-token-sign</module>
+        <module>pkuse-token-redisson</module>
+
+        <!-- SpringBoot 环境插件 -->
+        <module>pkuse-token-alone-redisson</module>
+        <module>pkuse-token-spring-aop</module>
+        <module>pkuse-token-redisson-spring-boot-starter</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+
+            <!-- 默认使用 pkuse-token springboot3 相关依赖版本定义，子模块也可以引入其它的进行覆盖 -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot3-dependencies</artifactId>
+                <version>${revision}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>

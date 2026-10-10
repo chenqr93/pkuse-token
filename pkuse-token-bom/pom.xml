@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>pkuse-token-bom</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+    <name>pkuse-token-bom</name>
+    <description>Pkuse-Token Bom</description>
+
+    <properties>
+        <revision>1.46.0</revision>
+
+    </properties>
+
+
+    <!-- 作者信息 -->
+    <developers>
+        <developer>
+            <name>eric</name>
+        </developer>
+    </developers>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- pkuse-token 核心 -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-core</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- region pkuse-token-starter -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-jakarta-servlet</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot-webmvc-reactor-v2v3v4-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot-webmvc-v3v4-common</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!-- endregion-->
+
+            <!-- region pkuse-token-plugin -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-plugin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-jackson</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-redisson</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-alone-redisson</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-jwt</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-oauth2</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-sign</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-aop</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-sso</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <!-- endregion-->
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- 项目构建 -->
+    <build>
+        <plugins>
+
+            <!-- 源码编译 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.15.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <parameters>true</parameters>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+            <!-- flatten 统一版本号管理 -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.7.3</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+
+
+
+        </plugins>
+
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.eclipse.m2e</groupId>
+                    <artifactId>lifecycle-mapping</artifactId>
+                    <version>1.0.0</version>
+                    <configuration>
+                        <lifecycleMappingMetadata>
+                            <pluginExecutions>
+                                <pluginExecution>
+                                    <pluginExecutionFilter>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-enforcer-plugin</artifactId>
+                                        <versionRange>[1.0.0,)</versionRange>
+                                        <goals>
+                                            <goal>enforce</goal>
+                                        </goals>
+                                    </pluginExecutionFilter>
+                                    <action>
+                                        <ignore />
+                                    </action>
+                                </pluginExecution>
+                            </pluginExecutions>
+                        </lifecycleMappingMetadata>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>

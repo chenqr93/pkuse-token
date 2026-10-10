@@ -1,344 +1,183 @@
-简体中文 | [繁體中文](./README_zh_TW.md) | [English](./README_en.md) | [日本語](./README_ja.md) | [한국어](./README_ko.md) | [Русский](./README_ru.md)
+# Pkuse-Token
 
-<p align="center">
-	<img alt="logo" src="https://sa-token.com/logo.png" width="150" height="150">
-</p>
-<h1 align="center" style="margin: 30px 0 30px; font-weight: bold;">Sa-Token v1.46.0</h1>
-<h4 align="center">✨ 开源、免费、一站式 java 权限认证框架，让鉴权变得简单、优雅！ </h4>
-<p align="center">
-	<a href="https://gitee.com/dromara/sa-token/stargazers"><img src="https://gitee.com/dromara/sa-token/badge/star.svg?theme=gvp"></a>
-	<a href="https://gitee.com/dromara/sa-token/members"><img src="https://gitee.com/dromara/sa-token/badge/fork.svg?theme=gvp"></a>
-	<a href="https://atomgit.com/dromara/sa-token/stargazers"><img src="https://atomgit.com/dromara/Sa-Token/star/badge.svg"></a>
-	<a href="https://github.com/dromara/sa-token/stargazers"><img src="https://img.shields.io/github/stars/dromara/sa-token?style=flat-square&logo=GitHub"></a>
-	<a href="https://github.com/dromara/sa-token/network/members"><img src="https://img.shields.io/github/forks/dromara/sa-token?style=flat-square&logo=GitHub"></a>
-	<!-- <a href="https://github.com/dromara/sa-token/watchers"><img src="https://img.shields.io/github/watchers/dromara/sa-token?style=flat-square&logo=GitHub"></a> -->
-	<!-- <a href="https://github.com/dromara/sa-token/issues"><img src="https://img.shields.io/github/issues/dromara/sa-token.svg?style=flat-square&logo=GitHub"></a> -->
-	<a href="https://github.com/dromara/sa-token/blob/master/LICENSE"><img src="https://img.shields.io/github/license/dromara/sa-token.svg?style=flat-square"></a>
-</p>
-<!-- <p align="center">学习测试请拉取 master 分支，dev 是在开发分支 (在根目录执行 `git checkout master`)</p> -->
-<p align="center">
-	<a href="https://sa-token.com?way=readme" target="_blank">在线文档：https://sa-token.com</a>
-	&nbsp;|&nbsp;
-	<a href="https://sa-token.com/doc.html#/more/demand-commit" target="_blank">需求提交</a>
-</p>
+**面向 Spring Boot 3 的轻量级 Java 权限认证框架，单点登录（SSO）是一等公民。**
 
+Pkuse-Token 由 [Sa-Token v1.46.0](https://sa-token.com) 改造而来（构件坐标 `com.bdsoft`、包名 `com.bdsoft.satoken`），在此基础上完成了平台化收敛：
+
+- **仅支持 Spring Boot 3**（SB2 / SB4 支持已移除），Java 17 基线，编译开启 `-parameters`；
+- **单线存储选型 Redisson**，SSO 全家桶演示与存储层完全对齐；
+- **模块高度精简**：reactor 21 个模块、9 个插件，全部无用模块与 SB2 历史包袱已清除。
 
 ---
 
-### 📝 前言：
+## 一、总体架构
 
-回望 2020 年初，我为 Sa-Token 提交第一行代码之际，彼时市面上 Java 缺少的不仅是一个简洁好用的鉴权框架，更是一整套清晰、自洽的权限架构设计思想。
+框架分为四层，自上而下逐层依赖，每层职责单一：
 
-因此，这几年间我将大量时间倾注在 Sa-Token 的文档编写，几乎每一章节、每一句话、每一个字都经过反复修改、精细打磨，以求做到最清晰、干练、易懂的表述。用心阅读文档，你学习到的将不止是 Sa-Token 框架本身，更是绝大多数场景下权限设计的最佳实践。
-
-
-
-### 🛠️ Sa-Token 介绍
-
-Sa-Token 是一个轻量级 Java 权限认证框架，目前拥有五大核心模块：登录认证、权限认证、单点登录、OAuth2.0、微服务鉴权。
-
-**你还在手搓以下功能？Stop ⚠️ 让 Sa-Token 来！**
-
-![sa-token-jss](https://sa-token.com/big-file/index/intro/sa-token-jss--tran.png)
-
-要在 SpringBoot 项目中使用 Sa-Token，你只需要在 pom.xml 中引入依赖：
-
-``` xml
-<!-- Sa-Token 权限认证, 在线文档：https://sa-token.com -->
-<dependency>
-	<groupId>cn.dev33</groupId>
-	<artifactId>sa-token-spring-boot-starter</artifactId>
-	<version>1.46.0</version>
-</dependency>
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  应用层（你的 Spring Boot 3 项目）                                  │
+│      引入 pkuse-token-spring-boot3-starter + 按需引入插件           │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+┌────────────────────────────▼────────────────────────────────────┐
+│  ① Starter 层 —— spring-boot3-starter                           │
+│      只做一件事：把下层组装成一个开箱即用的 starter                    │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+┌────────────────────────────▼────────────────────────────────────┐
+│  ② Web 运行时层 —— spring-boot-webmvc-v3v4-common                │
+│      过滤器 / 拦截器 / 请求上下文（让框架跑在 HTTP 上）                │
+└──────────────┬─────────────────────────────────┬────────────────┘
+               │                                 │
+┌──────────────▼──────────────┐   ┌──────────────▼────────────────┐
+│  ③ Servlet 模型层            │   │  ④ Bean 装配层                │
+│  jakarta-servlet            │   │  webmvc-reactor-v2v3v4-common │
+│  request/response/storage   │   │  yml 配置 → Bean → 静态门面     │
+└──────────────┬──────────────┘   └──────────────┬────────────────┘
+               │                                 │
+┌──────────────▼─────────────────────────────────▼────────────────┐
+│  ⑤ 核心引擎层 —— core（零第三方依赖）                               │
+│      SaManager / StpLogic / SaSession / SaTokenDao / 路由匹配      │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ 可选插件（按需引入，条件装配）
+┌────────────────────────────▼────────────────────────────────────┐
+│  插件层：sso(+sign) ｜ oauth2(+jwt) ｜ redisson 存储线 ｜ spring-aop │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
-除了支持 SpringBoot2、Sa-Token 还为 SpringBoot3/4、Solon、JFinal 等常见 Web 框架提供集成包，做到真正的开箱即用。
+## 二、模块清单与依赖关系
 
+### 2.1 版本管理层（4 个模块）
 
-<details>
-<summary><b>简单示例展示：</b>（点击展开 / 折叠）</summary>
+| 模块 | 作用 |
+|---|---|
+| `pkuse-token-bom` | **自家构件版本清单**：管理全部 com.bdsoft 构件的版本（`${revision}` CI 友好版本） |
+| `pkuse-token-dependencies` | **三方版本目录**：jackson2 / redisson / hutool-jwt / jakarta-servlet-api 等 |
+| `pkuse-token-special-dependencies` | 聚合器，当前只含 ↓ |
+| `pkuse-token-spring-boot3-dependencies` | **Spring 系版本清单**：spring-boot 3.5.x / spring 6.2.x 的 starter 与核心库 |
 
-Sa-Token 旨在以简单、优雅的方式完成系统的权限认证部分，以登录认证为例，你只需要：
+版本传递链：`根 pom → import dependencies（继承 bom）→ 各层 import spring-boot3-dependencies`。三层各管一摊，升级互不干扰。
 
-``` java
-// 会话登录，参数填登录人的账号id 
-StpUtil.login(10001);
+### 2.2 核心与 Starter 链（6 个模块）
+
+```
+pkuse-token-spring-boot3-starter        ← 应用唯一需要引入的依赖
+ ├── pkuse-token-spring-boot-webmvc-v3v4-common     （Web 运行时桥）
+ │    ├── pkuse-token-jakarta-servlet               （Servlet 上下文模型）
+ │    └── pkuse-token-spring-boot-webmvc-reactor-v2v3v4-common  （Bean 装配层）
+ │         └── pkuse-token-core                     （核心引擎，零依赖）
+ └── pkuse-token-jackson                            （默认 JSON 模板）
 ```
 
-无需实现任何接口，无需创建任何配置文件，只需要这一句静态代码的调用，便可以完成会话登录认证。
+| 模块 | 职责 |
+|---|---|
+| `pkuse-token-core` | **框架心脏**：登录认证、会话、权限、路由匹配、全局门面 `SaManager`。零第三方依赖，内置默认 JSON / HTTP 实现 |
+| `pkuse-token-jakarta-servlet` | 请求三件套 `SaRequestForServlet` / `SaResponseForServlet` / `SaStorageForServlet` 与上下文工具（jakarta 命名空间） |
+| `...webmvc-reactor-v2v3v4-common` | **Bean 装配层**：`@ConfigurationProperties` 绑定 `sa-token.*` 配置并注入静态门面；对 sso / oauth2 / sign 插件做条件装配（`@ConditionalOnClass` + optional 依赖） |
+| `...webmvc-v3v4-common` | **Web 运行时桥**：注册上下文过滤器、防火墙、CORS、`SaInterceptor`（注解鉴权 + 路由拦截），SB3 自动配置入口 `SaTokenContextRegister` |
+| `pkuse-token-spring-boot3-starter` | 入口打包：带入 Web 链 + 默认 JSON 引擎，零代码接入 |
 
-如果一个接口需要登录后才能访问，我们只需调用以下代码：
+> 模块名中的 `v3v4` / `v2v3v4` 是多 Spring Boot 版本时代的历史命名，现仅服务 SB3，为保持 Maven 坐标稳定而保留。
 
-``` java
-// 校验当前客户端是否已经登录，如果未登录则抛出 `NotLoginException` 异常
-StpUtil.checkLogin();
+### 2.3 插件层（9 个模块）
+
+| 插件 | 依赖 | 说明 |
+|---|---|---|
+| `pkuse-token-sso` | core、**sign** | **单点登录（核心诉求）**：认证中心 / 三种客户端对接模式，纯 Java 库零 Spring 依赖 |
+| `pkuse-token-sign` | core | API 签名校验（sso 强制依赖） |
+| `pkuse-token-oauth2` | core、jwt、sign | OAuth2 授权服务器四种模式 |
+| `pkuse-token-jwt` | core | JWT 令牌风格（Simple / Mixin / Stateless） |
+| `pkuse-token-jackson` | core | 默认 JSON 序列化模板 |
+| `pkuse-token-redisson` | core | `SaTokenDao` 的 Redisson 实现（共享会话存储） |
+| `pkuse-token-redisson-spring-boot-starter` | redisson | Redisson DAO 的 Spring Boot 自动装配 |
+| `pkuse-token-alone-redisson` | redisson | 为 token 配置独立 Redis 连接（`sa-token.alone-redisson.config`，Redisson 原生 YAML） |
+| `pkuse-token-spring-aop` | core | 非 Controller 方法上的注解鉴权（AOP 切面） |
+
+SSO 多端共享会话的最小依赖组合：`spring-boot3-starter + sso + redisson-spring-boot-starter`。
+
+### 2.4 演示与测试（不在主 reactor 内，独立聚合）
+
+```
+pkuse-token-demo/     14 个工程，全部运行在 com.bdsoft 构件 + SB 3.5.16 + Redisson 线
+├── pkuse-token-demo-sso/          SSO 家族：server + 模式一/二/三客户端及变体（nosdk/resdk/anon）
+├── pkuse-token-demo-oauth2/       OAuth2 授权码模式 server + client
+├── pkuse-token-demo-remember-me/  记住我
+├── pkuse-token-demo-device-lock/  设备锁定
+├── pkuse-token-demo-jwt/          JWT 三模式
+└── springboot3-redis / alone-redisson-sb3   存储基线
+
+pkuse-token-test/     3 个模块，180 个用例
+├── pkuse-token-springboot-test    147 用例：真实 Spring 上下文 + MockMvc 集成测试
+├── pkuse-token-jwt-test           26 用例：JWT 三模式
+└── pkuse-token-json-test          7 用例：JSON 引擎与反序列化安全
 ```
 
-在 Sa-Token 中，大多数功能都可以一行代码解决：
+## 三、架构设计原理
 
-踢人下线：
+1. **核心零依赖、能力插件化**：`core` 不依赖任何第三方库（JSON / HTTP 都有内置默认实现），所有增强能力（SSO、OAuth2、存储、JWT）都是独立插件，按需引入、条件装配，不引零开销。
+2. **协议库与 Spring 解耦**：`sso` / `oauth2` 等插件是纯 Java 库，不认识 Spring；Spring 装配统一收敛在 starter 链的 Bean 装配层。这样插件可以脱离容器单测，也便于未来支持其他运行时。
+3. **条件装配 + 可覆盖**：装配层用 `@ConditionalOnClass`（引了插件才装配对应 Bean）、`@ConditionalOnMissingBean`（业务方注册自己的模板即可覆盖默认行为，如自定义 `SaSsoServerTemplate`）。
+4. **optional 依赖抑制传递**：Bean 装配层对 sso / oauth2 / sign 声明为 `optional`，依赖不会强加给应用，只有显式引入才参与装配。
+5. **三层版本管理**：自家构件（bom）、三方库（dependencies）、Spring 系（spring-boot3-dependencies）各一层 import，版本治理互不牵连。
+6. **双注册机制**：Spring Boot 自动配置走 `AutoConfiguration.imports`；插件发现走 SPI 文件 `META-INF/satoken/com.bdsoft.satoken.plugin.SaTokenPlugin`。
+7. **静态门面 + 容器注入双轨**：核心以 `SaManager` 等静态门面提供极简 API，Spring 环境下由装配层把容器 Bean 注入门面，两种风格互通。
 
-``` java
-// 将账号id为 10077 的会话踢下线 
-StpUtil.kickout(10077);
+## 四、源码阅读指南
+
+### 推荐阅读顺序（由入口到深处）
+
+**第 1 站：跑起来看效果**
+- `pkuse-token-demo/pkuse-token-demo-sso/`：先看 `pkuse-token-demo-sso-server`（认证中心）和 `pkuse-token-demo-sso3-client`（模式三客户端，生产最常用），对照 `application.yml` 里的 `sa-token.sso-server.*` / `sso-client.*` 配置理解三种模式差异。
+
+**第 2 站：Spring Boot 集成链（框架如何接入容器）**
+- 入口文件：`pkuse-token-spring-boot-webmvc-v3v4-common` 的 `META-INF/spring/...AutoConfiguration.imports` → `SaTokenContextRegister`（过滤器 / 拦截器注册）
+- 再看 Bean 装配层：`SaBeanRegister` / `SaBeanInject`（配置如何变成 Bean 并注入门面）、`sso/SaSsoBeanRegister`（SSO 配置绑定）
+
+**第 3 站：核心引擎**
+- `com.bdsoft.satoken.SaManager`：全局门面，一切从这里出发
+- `com.bdsoft.satoken.stp.StpLogic` + `StpUtil`：登录模型（login / logout / kickout / 会话）
+- `com.bdsoft.satoken.session.SaSession`：会话模型
+- `com.bdsoft.satoken.dao.SaTokenDao`：存储接口（默认内存实现，Redisson 插件替换之）
+
+**第 4 站：SSO 协议（核心诉求）**
+- `com.bdsoft.satoken.sso.processor.SaSsoServerProcessor` / `SaSsoClientProcessor`：请求处理入口（`/sso/auth`、`/sso/check-ticket` 等端点逻辑）
+- `com.bdsoft.satoken.sso.template.SaSsoServerTemplate` / `SaSsoClientTemplate`：协议模板
+
+**第 5 站：存储线**
+- `pkuse-token-redisson` 的 `SaTokenDaoForRedisson`：`SaTokenDao` 的分布式实现
+
+### 关键类速查
+
+| 想了解 | 看哪里 |
+|---|---|
+| 全局配置与组件 | `core` → `SaManager` |
+| 登录 / 权限 API | `core` → `StpUtil`、`StpLogic` |
+| 注解鉴权 | `spring-aop` 插件 + Web 层 `SaInterceptor` |
+| 路由拦截 | `core` → `SaRouter` |
+| SSO 三种模式 | `sso` 插件 + demo-sso 家族 |
+| 会话存储替换 | `SaTokenDao` 接口及 redisson 实现 |
+| yml 配置项绑定 | Bean 装配层 `SaBeanRegister` / `SaSsoBeanRegister` |
+
+## 五、构建与测试
+
+```bash
+# 环境：JDK 17+
+# 主工程（21 个模块）
+mvn clean install -DskipTests
+
+# 单元测试与集成测试（180 用例）
+cd pkuse-token-test && mvn clean test
+
+# 运行 SSO 演示（需本地 Redis）
+cd pkuse-token-demo/pkuse-token-demo-sso/pkuse-token-demo-sso-server && mvn spring-boot:run
 ```
 
-权限认证：
-
-``` java
-// 注解鉴权：只有具备 `user:add` 权限的会话才可以进入方法
-@SaCheckPermission("user:add")
-public String insert(SysUser user) {
-    // ... 
-    return "用户增加";
-}
-```
-
-路由拦截鉴权：
-
-``` java
-// 根据路由划分模块，不同模块不同鉴权 
-registry.addInterceptor(new SaInterceptor(handler -> {
-	SaRouter.match("/user/**", r -> StpUtil.checkPermission("user"));
-	SaRouter.match("/admin/**", r -> StpUtil.checkPermission("admin"));
-	SaRouter.match("/goods/**", r -> StpUtil.checkPermission("goods"));
-	SaRouter.match("/orders/**", r -> StpUtil.checkPermission("orders"));
-	SaRouter.match("/notice/**", r -> StpUtil.checkPermission("notice"));
-	// 更多模块... 
-})).addPathPatterns("/**");
-```
-
-**如果您曾经使用过 Shiro、SpringSecurity，在切换到 Sa-Token 后，您将体会到质的飞跃。**
-
-<!-- 当你受够 Shiro、SpringSecurity 等框架的三拜九叩之后，你就会明白，相对于这些传统老牌框架，Sa-Token 的 API 设计是多么的简单、优雅！ -->
-
-</details>
-
-
-<details>
-<summary> <b>核心模块一览：</b>（点击展开 / 折叠） </summary>
-
-- **登录认证** —— 单端登录、多端登录、同端互斥登录、七天内免登录。
-- **权限认证** —— 权限认证、角色认证、会话二级认证。
-- **踢人下线** —— 根据账号id踢人下线、根据Token值踢人下线。
-- **注解式鉴权** —— 优雅的将鉴权与业务代码分离。
-- **路由拦截式鉴权** —— 根据路由拦截鉴权，可适配 restful 模式。
-- **Session会话** —— 全端共享Session,单端独享Session,自定义Session,方便的存取值。
-- **持久层扩展** —— 可集成 Redis，重启数据不丢失。
-- **前后台分离** —— APP、小程序等不支持 Cookie 的终端也可以轻松鉴权。
-- **Token风格定制** —— 内置六种 Token 风格，还可：自定义 Token 生成策略。
-- **记住我模式** —— 适配 [记住我] 模式，重启浏览器免验证。
-- **二级认证** —— 在已登录的基础上再次认证，保证安全性。 
-- **模拟他人账号** —— 实时操作任意用户状态数据。
-- **临时身份切换** —— 将会话身份临时切换为其它账号。
-- **同端互斥登录** —— 像QQ一样手机电脑同时在线，但是两个手机上互斥登录。
-- **账号封禁** —— 登录封禁、按照业务分类封禁、按照处罚阶梯封禁。
-- **密码加密** —— 提供基础加密算法，可快速 MD5、SHA1、SHA256、AES 加密。
-- **会话查询** —— 提供方便灵活的会话查询接口。
-- **Http Basic认证** —— 一行代码接入 Http Basic、Digest 认证。
-- **全局侦听器** —— 在用户登陆、注销、被踢下线等关键性操作时进行一些AOP操作。
-- **全局过滤器** —— 方便的处理跨域，全局设置安全响应头等操作。
-- **多账号体系认证** —— 一个系统多套账号分开鉴权（比如商城的 User 表和 Admin 表）
-- **单点登录** —— 内置三种单点登录模式：同域、跨域、同Redis、跨Redis、前后端分离等架构都可以搞定。
-- **单点注销** —— 任意子系统内发起注销，即可全端下线。
-- **OAuth2.0认证** —— 轻松搭建 OAuth2.0 服务，支持openid模式 。
-- **分布式会话** —— 提供共享数据中心分布式会话方案。
-- **微服务网关鉴权** —— 适配Gateway、ShenYu、Zuul等常见网关的路由拦截认证。
-- **RPC调用鉴权** —— 网关转发鉴权，RPC调用鉴权，让服务调用不再裸奔
-- **临时Token认证** —— 解决短时间的 Token 授权问题。
-- **独立Redis** —— 将权限缓存与业务缓存分离。
-- **Quick快速登录认证** —— 为项目零代码注入一个登录页面。
-- **标签方言** —— 提供 Thymeleaf 标签方言集成包，提供 beetl 集成示例。
-- **jwt集成** —— 提供三种模式的 jwt 集成方案，提供 token 扩展参数能力。
-- **RPC调用状态传递** —— 提供 dubbo、grpc 等集成包，在RPC调用时登录状态不丢失。
-- **参数签名** —— 提供跨系统API调用签名校验模块，防参数篡改，防请求重放。
-- **自动续签** —— 提供两种Token过期策略，灵活搭配使用，还可自动续签。
-- **开箱即用** —— 提供SpringMVC、WebFlux、Solon 等常见框架集成包，开箱即用。
-- **最新技术栈** —— 适配最新技术栈：支持 SpringBoot 3.x，jdk 17。
-
-</details>
-
-
-
-### 🍃 SSO 单点登录
-
-Sa-Token SSO 分为三种模式，可解决：`同域、跨域、共享Redis、跨Redis、前后端一体、前后端分离、纯 js、vue2、vue3、java 项目、非 java 项目` 等架构下的 SSO 认证需求：
-
-![sa-token-jss](https://sa-token.com/big-file/doc/sso/sa-token-sso--white.png)
-
-
-| 系统架构						| 采用模式	| 简介						        |  文档链接	|
-| :--------						| :--------	|:----------------| :--------	|
-| 前端同域 + 后端同 Redis			| 模式一		| 共享Cookie同步会话			 | [文档](https://sa-token.com/doc.html#/sso/sso-type1)、[示例](https://gitee.com/dromara/sa-token/blob/master/sa-token-demo/sa-token-demo-sso1-client)	|
-| 前端不同域 + 后端同 Redis		| 模式二		| URL重定向传播会话 			  | [文档](https://sa-token.com/doc.html#/sso/sso-type2)、[示例](https://gitee.com/dromara/sa-token/blob/master/sa-token-demo/sa-token-demo-sso2-client)	|
-| 前端不同域 + 后端 不同Redis		| 模式三		| HTTP请求获取会话			   | [文档](https://sa-token.com/doc.html#/sso/sso-type3)、[示例](https://gitee.com/dromara/sa-token/blob/master/sa-token-demo/sa-token-demo-sso3-client)	|
-
-
-1. 前端同域：就是指多个系统可以部署在同一个主域名之下，比如：`c1.domain.com`、`c2.domain.com`、`c3.domain.com`
-2. 后端同 Redis：就是指多个系统可以连接同一个 Redis，共享会话数据。
-3. 如果无法做到前端同域、后端同 Redis，可以走托底的模式三：Http请求校验 ticket 获取会话。
-4. 提供：NoSdk 模式示例 + sso-server 接口文档，非 Sa-Token 项目、非 java 项目也可以对接。
-5. 提供：多重安全校验：域名校验、ticket校验、参数签名校验，有效防 ticket 劫持，防请求重放等攻击。
-6. 提供：大量实战痛点教学：sso-server 前后端分离设计、sso-client 前后端分离设计、用户数据同步/迁移方案设计。
-7. 提供：直接可运行的 demo 示例，助你快速熟悉 SSO 大致登录流程。
-8. 提供：深度细节优化，参数防丢：笔者曾试验多个SSO框架，均有参数丢失情况，比如登录前是：`http://a.com?id=1&name=2`，登录成功后就变成了：`http://a.com?id=1`，Sa-Token-SSO 内有专门算法保证了参数不丢失，登录成功后精准原路返回。
-
-
-
-
-### 🍂 OAuth2 授权认证
-Sa-Token OAuth2 模块分为四种授权模式，解决不同场景下的授权需求 
-
-| 授权模式					| 简介						|
-| :--------					| :--------					|
-| 授权码式					| OAuth2 标准授权步骤，server 端下放 code，client 端获取 code 码兑换 access_token			|
-| 隐藏式					| 备用选择，server 端使用 URL 重定向方式直接将 access_token 下放到 client 端页面 			|
-| 密码式					| client 直接拿着用户的账号密码换取授权 access_token				|
-| 客户端凭证式				| server 端针对 client 级别的 client_token，代表应用自身的资源授权		|
-
-详细参考文档：[https://sa-token.com/doc.html#/oauth2/readme](https://sa-token.com/doc.html#/oauth2/readme)
-
-
-### 📖❓ 疑问解答
-
-**1、Sa-Token 功能全不全？**
-
-七年磨一剑：五大核心模块(登录、鉴权、SSO、OAuth2、微服务) + 众多实用插件 (短 token、jwt 集成、API 参数签名、API Key 秘钥授权...) 我们提供的不只是权限认证，我们提供的是一站式解决方案。
-
-
-**2、Sa-Token 好不好学？**
-
-中文文档 + 中文代码注释 + 中文交流社区 + 大量实战案例博客 + 多个视频教程 + 大量优秀开源项目集成案例。
-
-
-**3、Sa-Token 用的人多不多？**
-
-截止统计日 (2026-1-25) 起，Sa-Token 在：
-
-- Gitee 关注量达到 48627 Star，位列平台所有推荐项目排行榜第一名。
-- GitHub 关注量达到 18523 Star，是主要竞争框架 Spring Security 的 1.97 倍，Apache Shiro 的 4.19 倍。
-- 25+ 微信粉丝群 (500人)，8+ QQ粉丝群 (1000人 or 2000人) ，在线文档访问量月PV 20万+。
-
-这是众多开发者用脚投票的数据，相信这些数据比任何言语都能证明 Sa-Token 的热度。
-
-
-**4、Sa-Token 有哪些权威认证？**
-
-曾获荣誉包括但不限于：Gitee GVP 最有价值开源项目、GitCode G-Star 优质开源项目、OSCHINA 2021 人气指数 TOP 30 开源项目、OSCHINA 2022 年度最火热中国开源项目社区之一、开放原子基金会2023快速成长开源项目、 Dromara 组织顶尖项目（之一）、可信开源社区共同体预备成员、所在开源社区 “Dromara” 荣获《2024中国互联网发展创新与投资大赛（开源）》二等奖。 Gitee High Star 计划项目(5000+star)。Gitee 2025年度开源项目 Web应用开发 Top 2。
-
-
-**5、Sa-Token 收费吗？**
-
-Sa-Token 采用 Apache-2.0 开源协议，承诺框架本身与在线文档永久免费开放。当然如果您有心赞助 Sa-Token，我们也不回避：[赞助链接](https://sa-token.com/doc.html#/more/sa-token-donate)。
-我们将定期同步赞助者名单到在线文档展示。（您需要注意的一点是：该赞助仅为友情赞助，不提供任何商业交换）
-
-
-**6、Sa-Token 是封装的 SpringSecurity 吗？是套壳 ApacheShiro 吗？**
-
-不是。Sa-Token 不是一个后台模板，也不是针对 xx 框架的二次封装套壳，而是从 0 开始的纯血自研框架，核心包零依赖，完全自主可控的架构内核 + 众多主流框架的集成适配。
-						
-
-
-
-#### 证书 ⭐ 奖杯 🏆 荣誉展示 
-
-<table align="center">
-  <tr>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/gvp.jpg" title="GVP - Gitee 最有价值开源项目" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/g-star.jpg" title="GitCode G-Star 优质开源项目" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/osc-2021.jpg" title="OSCHINA 2021 人气指数 TOP 30 开源项目" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/osc-2022--chang.jpg" title="OSCHINA 2022 年度最火热中国开源项目社区" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/kexin.jpg" title="可信开源社区共同体预备成员" /></td>
-  </tr>
-  <tr>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/gitee-star-5000.jpg" title="Gitee 5000 star 专属奖杯" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/gitee-2025--chang.jpg" title="Gitee 2025年度开源项目 Web应用开发 Top 2" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/dromara.jpg" title="Dromara 组织顶尖项目（之一）" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/kaifangyuanzi2--chang.jpg" title="开放原子基金会2023快速成长开源项目" /></td>
-    <td align="center" width="330"><img src="https://sa-token.com/big-file/index/awards-zip/dromara-2024-tzds.jpg" title="Dromara 荣获《2024中国互联网发展创新与投资大赛（开源）》二等奖" /></td>
-  </tr>
-</table>
-
-
-
-### 🚀 优秀开源集成案例
-
-- [[ Snowy ]](https://gitee.com/xiaonuobase/snowy)：国内首个国密前后分离快速开发平台，采用 Vue3 + Vite + SpringBoot + Mp + HuTool + SaToken。
-- [[ RuoYi-Vue-Plus ]](https://gitee.com/dromara/RuoYi-Vue-Plus)：重写RuoYi-Vue所有功能 集成 Sa-Token、Mybatis-Plus、Xxl-Job、knife4j、OSS 定期同步。
-- [[ Smart-Admin ]](https://gitee.com/lab1024/smart-admin)：SmartAdmin 国内首个以「高质量代码」为核心，「简洁、高效、安全」中后台快速开发平台。
-- [[ 橙单 ]](https://gitee.com/orangeform/orange-admin)： 橙单中台化低代码生成器。可完整支持多应用、多租户、多渠道、工作流、框架技术栈自由组合等。
-- [[ 灯灯 ]](https://gitee.com/dromara/lamp-cloud)： 专注于多租户解决方案的中后台快速开发平台。支持独立数据库、共享数据架构 和 非租户模式 ✨
-- [[ 拾壹博客 ]](https://gitee.com/quequnlong/shiyi-blog)：一款 vue + springboot 前后端分离的博客系统。
-
-
-
-还有更多优秀开源案例无法逐一展示，请参考：[Awesome-Sa-Token](https://gitee.com/sa-token/awesome-sa-token)
-
-
-### 🌍 其它语言版本
-
-Sa-Token 社区成员贡献了多语言实现版本：
-
-- Rust 版本：[https://github.com/sa-tokens/sa-token-rust](https://github.com/sa-tokens/sa-token-rust)
-- Go 版本：[https://github.com/sa-tokens/sa-token-go](https://github.com/sa-tokens/sa-token-go)
-- NodeJS 版本：[https://github.com/xiaoLangtou/xlt-token](https://github.com/xiaoLangtou/xlt-token)
-- PHP 版本：[https://gitee.com/jinan-jimeng-network_0/real-token](https://gitee.com/jinan-jimeng-network_0/real-token)
-
-我们诚邀对上述语言较为熟练的开发者，一起建设相关版本。🤝
-
-
-### 🔗 友情链接
-- [[ OkHttps ]](https://gitee.com/ejlchina-zhxu/okhttps)：轻量级 http 通信框架，API无比优雅，支持 WebSocket、Stomp 协议
-- [[ Forest ]](https://gitee.com/dromara/forest)：声明式与编程式双修，让天下没有难以发送的 HTTP 请求
-- [[ Bean Searcher ]](https://github.com/troyzhxu/bean-searcher)：REST 版的 GraphQL — 实体定义边界，参数驱动查询，一行代码实现复杂查询！
-- [[ Jpom ]](https://gitee.com/dromara/Jpom)：简而轻的低侵入式在线构建、自动部署、日常运维、项目监控软件。
-- [[ TLog ]](https://gitee.com/dromara/TLog)：一个轻量级的分布式日志标记追踪神器。
-- [[ hippo4j ]](https://gitee.com/agentart/hippo4j)：强大的动态线程池框架，附带监控报警功能。
-- [[ hertzbeat ]](https://gitee.com/dromara/hertzbeat)：易用友好的开源实时监控告警系统，无需Agent，高性能集群，强大自定义监控能力。
-- [[ Solon ]](https://gitee.com/noear/solon)：一个更现代感的应用开发框架：更快、更小、更自由。
-- [[ Chat2DB ]](https://github.com/chat2db/Chat2DB)：一个AI驱动的数据库管理和BI工具，支持Mysql、pg、Oracle、Redis等22种数据库的管理。
-
-
-
-### 📦 代码托管
-- Gitee：[https://gitee.com/dromara/sa-token](https://gitee.com/dromara/sa-token)
-- GitHub：[https://github.com/dromara/sa-token](https://github.com/dromara/sa-token)
-- AtomGit：[https://atomgit.com/dromara/sa-token](https://atomgit.com/dromara/sa-token)
-
-
-
-### 📚 示例大全
-
-**我们为框架几乎所有技术点均单独制作了对应的集成示例，此压缩包共计 60+ Demo**：涵盖 Sa-Token 登录认证、权限认证、SSO 单点登录、OAUth2 统一认证、微服务鉴权、API Key 认证、JWT集成、跨系统调用参数签名校验 等鉴权认证的方方面面。
-
-下载地址：[https://sa-token.com/doc.html#/more/download-demos](https://sa-token.com/doc.html#/more/download-demos) 
-
-<img class="s-w" src="https://sa-token.com/big-file/contact/show/sa-token-demos-pre-liubai.png" />
-
-
-
-### 💬 交流群
-<!-- QQ交流群：685792424 [点击加入](http://qm.qq.com/cgi-bin/qm/qr?_wv=1027&k=Y05Ld4125W92YSwZ0gA8e3RhG9Q4Vsfx&authKey=IomXuIuhP9g8G7l%2ByfkrRsS7i%2Fna0lIBpkTXxx%2BQEaz0NNEyJq00kgeiC4dUyNLS&noverify=0&group_code=685792424)-->
-<!-- QQ交流群：1081649142 [点击加入](https://qm.qq.com/q/SCAaZ6Ros2) -->
-
-QQ交流群：1098917026 [点击加入](https://qm.qq.com/q/26OFBGd2Zy) 
-
-微信交流群：
-
-<!-- <img src="https://oss.dev33.cn/sa-token/qr/wx-qr-m-400k.png" width="230px" title="微信群" /> -->
-
-<img src="https://sa-token.com/big-file/contact/i-wx-qr2.jpg" width="230px" title="微信群" />
-
-PS：扫码添加微信 (备注：sa-token)，邀您加入群聊。
-
-<br>
-
-<img class="s-w" src="https://sa-token.com/big-file/contact/show/wx-group-show3--liubai.png" style="max-width: 50%;" alt="微信群" />
-
-
-加入群聊的好处：
-- 第一时间收到框架更新通知。
-- 第一时间收到框架 bug 通知。
-- 第一时间收到新增开源案例通知。
-- 和众多大佬一起互相 (huá shuǐ) 交流 (mō yú) 🖐️🐟️。
-
+## 六、与上游 Sa-Token 的关系
+
+- 由 sa-token v1.46.0 fork 改造：坐标 `cn.dev33 → com.bdsoft`，包名 `cn.dev33.satoken → com.bdsoft.satoken`；
+- 合并上游修复时，先对补丁做一次翻译再应用：
+  ```bash
+  sed 's/cn\.dev33/com.bdsoft/g' upstream.patch > translated.patch && git apply translated.patch
+  ```
+- 本平台不承诺跟随上游版本演进，架构与选型以本仓库为准。
