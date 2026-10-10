@@ -5,10 +5,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.pj.util.AjaxJson;
 
-import com.bdsoft.satoken.exception.DisableServiceException;
-import com.bdsoft.satoken.exception.NotLoginException;
-import com.bdsoft.satoken.exception.NotPermissionException;
-import com.bdsoft.satoken.exception.NotRoleException;
+import com.bdsoft.pkusetoken.exception.DisableServiceException;
+import com.bdsoft.pkusetoken.exception.NotLoginException;
+import com.bdsoft.pkusetoken.exception.NotPermissionException;
+import com.bdsoft.pkusetoken.exception.NotRoleException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 

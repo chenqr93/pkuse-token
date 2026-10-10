@@ -1,8 +1,8 @@
 //package com.pj.oauth2.custom_grant_type;
 //
-//import com.bdsoft.satoken.SaManager;
-//import com.bdsoft.satoken.util.SaFoxUtil;
-//import com.bdsoft.satoken.util.SaResult;
+//import com.bdsoft.pkusetoken.PkuseManager;
+//import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+//import com.bdsoft.pkusetoken.util.PkuseResult;
 //import org.springframework.web.bind.annotation.RequestMapping;
 //import org.springframework.web.bind.annotation.RestController;
 //
@@ -16,11 +16,11 @@
 //public class PhoneLoginController {
 //
 //    @RequestMapping("/oauth2/sendPhoneCode")
-//    public SaResult sendCode(String phone) {
-//        String code = SaFoxUtil.getRandomNumber(100000, 999999) + "";
-//        SaManager.getSaTokenDao().set("phone_code:" + phone, code, 60 * 5);
+//    public PkuseResult sendCode(String phone) {
+//        String code = PkuseFoxUtil.getRandomNumber(100000, 999999) + "";
+//        PkuseManager.getSaTokenDao().set("phone_code:" + phone, code, 60 * 5);
 //        System.out.println("手机号：" + phone + "，验证码：" + code + "，已发送成功");
-//        return SaResult.ok("验证码发送成功");
+//        return PkuseResult.ok("验证码发送成功");
 //    }
 //
 //}

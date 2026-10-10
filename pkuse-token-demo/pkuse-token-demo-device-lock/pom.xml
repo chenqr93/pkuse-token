@@ -19,7 +19,7 @@
 	<!-- 定义 Sa-Token 版本号 -->
 	<properties>
 		<pkuse-token.version>1.46.0</pkuse-token.version>
-		<java.run.main.class>com.pj.SaTokenDeviceLockApplication</java.run.main.class>
+		<java.run.main.class>com.pj.PkuseTokenDeviceLockApplication</java.run.main.class>
 	</properties>
 
 	<dependencies>

@@ -25,6 +25,8 @@
         <!-- <module>sa-token-springboot-integrate-test</module> -->
         <module>pkuse-token-jwt-test</module>
 		<module>pkuse-token-json-test</module>
+        <module>pkuse-token-easy-test</module>
+        <module>pkuse-token-jackson3-test</module>
     </modules>
 
 	<dependencies>

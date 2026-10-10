@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.pj.util.Ttime;
 
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 
 /**
  * 压力测试 
@@ -23,7 +23,7 @@ public class StressTestController {
 	// 测试   浏览器访问： http://localhost:8081/s-test/login 
 	// 测试前，请先将 is-read-cookie 配置为 false
 	@RequestMapping("login")
-	public SaResult login() {
+	public PkuseResult login() {
 //			StpUtil.getTokenSession().logout();
 //			StpUtil.logoutByLoginId(10001);
 
@@ -46,7 +46,7 @@ public class StressTestController {
 			list.add((t.returnMs() + 0.0) / 1000);
 			System.out.println("第" + i + "轮" + "用时：" + t.toString());
 		}
-//			System.out.println(((SaTokenDaoDefaultImpl)SaTokenManager.getSaTokenDao()).dataMap.size());
+//			System.out.println(((PkuseTokenDaoDefaultImpl)PkuseTokenManager.getSaTokenDao()).dataMap.size());
 		
 		System.out.println("\n---------------------测试结果---------------------");
 		System.out.println(list.size() + "次测试: " + list);
@@ -55,7 +55,7 @@ public class StressTestController {
 			ss += list.get(i);
 		}
 		System.out.println("平均用时: " + ss / list.size());
-		return SaResult.ok();
+		return PkuseResult.ok();
 	}
 	
 }

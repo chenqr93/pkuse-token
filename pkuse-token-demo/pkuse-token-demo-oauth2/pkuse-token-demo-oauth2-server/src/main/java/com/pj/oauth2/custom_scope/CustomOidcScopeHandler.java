@@ -1,7 +1,7 @@
 //package com.pj.oauth2.custom_scope;
 //
-//import com.bdsoft.satoken.oauth2.data.model.oidc.IdTokenModel;
-//import com.bdsoft.satoken.oauth2.scope.handler.OidcScopeHandler;
+//import com.bdsoft.pkusetoken.oauth2.data.model.oidc.IdTokenModel;
+//import com.bdsoft.pkusetoken.oauth2.scope.handler.OidcScopeHandler;
 //import org.springframework.stereotype.Component;
 //
 ///**

@@ -1,6 +1,6 @@
 package com.pj.test.model;
 
-import com.bdsoft.satoken.json.SaJsonType;
+import com.bdsoft.pkusetoken.json.PkuseJsonType;
 
 /**
  * Role 实体类
@@ -8,7 +8,7 @@ import com.bdsoft.satoken.json.SaJsonType;
  * @author click33
  * @since 2022-10-15
  */
-public class SysRole implements SaJsonType {
+public class SysRole implements PkuseJsonType {
 //
 //	public SysRole() {
 //	}

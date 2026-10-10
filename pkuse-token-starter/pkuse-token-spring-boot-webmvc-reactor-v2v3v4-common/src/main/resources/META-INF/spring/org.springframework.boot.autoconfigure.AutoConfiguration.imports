@@ -1,8 +1,0 @@
-com.bdsoft.satoken.spring.SaBeanRegister
-com.bdsoft.satoken.spring.SaBeanInject
-com.bdsoft.satoken.spring.sso.SaSsoBeanRegister
-com.bdsoft.satoken.spring.sso.SaSsoBeanInject
-com.bdsoft.satoken.spring.oauth2.SaOAuth2BeanRegister
-com.bdsoft.satoken.spring.oauth2.SaOAuth2BeanInject
-com.bdsoft.satoken.spring.sign.SaSignBeanRegister
-com.bdsoft.satoken.spring.sign.SaSignBeanInject

@@ -1,0 +1,431 @@
+/*
+ * Copyright 2020-2099 sa-token.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.bdsoft.pkusetoken.core.util;
+
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * PkuseFoxUtil 工具类测试 
+ * 
+ * @author click33
+ * @since 2022-2-8 22:14:25
+ */
+public class PkuseFoxUtilTest {
+
+    @Test
+    public void getRandomString() {
+    	String randomString = PkuseFoxUtil.getRandomString(8);
+    	Assertions.assertEquals(randomString.length(), 8);
+    }
+
+    @Test
+    public void isEmpty() {
+    	Assertions.assertTrue(PkuseFoxUtil.isEmpty(""));
+    	Assertions.assertTrue(PkuseFoxUtil.isEmpty(null));
+    	Assertions.assertFalse(PkuseFoxUtil.isEmpty("abc"));
+    	
+    	Assertions.assertTrue(PkuseFoxUtil.isNotEmpty("abc"));
+    	Assertions.assertFalse(PkuseFoxUtil.isNotEmpty(null));
+    	Assertions.assertFalse(PkuseFoxUtil.isNotEmpty(""));
+    }
+
+    @Test
+    public void equals() {
+    	Assertions.assertTrue(PkuseFoxUtil.equals(null, null));
+    	Assertions.assertTrue(PkuseFoxUtil.equals("a", "a"));
+    	Assertions.assertFalse(PkuseFoxUtil.equals("1", 1));
+    	Assertions.assertFalse(PkuseFoxUtil.equals("1", null));
+    	Assertions.assertFalse(PkuseFoxUtil.equals(null, "1"));
+    }
+
+    @Test
+    public void getMarking28() {
+    	Assertions.assertNotEquals(PkuseFoxUtil.getMarking28(), PkuseFoxUtil.getMarking28());
+    }
+
+    @Test
+    public void formatDate() {
+	Instant instant = Instant.ofEpochMilli(1644328600364L);
+	ZonedDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.of("Asia/Shanghai"));
+	String formatDate = PkuseFoxUtil.formatDate(zonedDateTime);
+	Assertions.assertEquals(formatDate, "2022-02-08 21:56:40");
+    }
+
+    @Test
+    public void searchList() {
+    	// 原始数据 
+    	List<String> dataList = Arrays.asList("token1", "token2", "token3", "token4", "token5", "aaa1");
+    	
+    	// 分页 
+    	List<String> list1 = PkuseFoxUtil.searchList(dataList, 1, 2, true);
+    	Assertions.assertEquals(list1.size(), 2);
+    	Assertions.assertEquals(list1.get(0), "token2");
+    	Assertions.assertEquals(list1.get(1), "token3");
+    	
+    	// 前缀筛选 
+    	List<String> list2 = PkuseFoxUtil.searchList(dataList, "token", "", 0, 10, true);
+    	Assertions.assertEquals(list2.size(), 5);
+
+    	// 关键字筛选 
+    	List<String> list3 = PkuseFoxUtil.searchList(dataList, "", "1", 0, 10, true);
+    	Assertions.assertEquals(list3.size(), 2);
+
+    	// 综合筛选 
+    	List<String> list4 = PkuseFoxUtil.searchList(dataList, "token", "1", 0, 10, true);
+    	Assertions.assertEquals(list4.size(), 1);
+
+    	// 关键字为null时，效果和 "" 等同 
+    	List<String> list4_2 = PkuseFoxUtil.searchList(dataList, null, null, 0, 10, true);
+    	List<String> list4_3 = PkuseFoxUtil.searchList(dataList, "", "", 0, 10, true);
+    	Assertions.assertEquals(list4_2.get(0), list4_3.get(0));
+    	
+    	
+    	// 不做分页  
+    	List<String> list5 = PkuseFoxUtil.searchList(dataList, "", "", 0, -1, true);
+    	Assertions.assertEquals(list5.size(), dataList.size());
+    	
+    	// 反序排列 list6的第一个元素 == dataList最后一个元素 
+    	List<String> list6 = PkuseFoxUtil.searchList(dataList, "", "", 0, -1, false);
+    	Assertions.assertEquals(list6.get(0), dataList.get(dataList.size() - 1));
+    }
+
+	@Test
+	public void vagueMatch() {
+		// 不模糊
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("hello", "hello"));
+
+		// 正常模糊
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("hello*", "hello"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("hello*", "hello world"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("hello*", "hello*"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("hello*", "he"));
+
+		// 带 -
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user-*", "user-"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user-*", "user-add"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user-*", "user-*"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user-*", "user"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user-*-add-*", "user-xx-add-1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user-*-add-*", "user-add-1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user-*", "usermgt-list"));
+
+		// 带 /
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user/*", "user/"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user/*", "user/add"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user/*", "user/*"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user/*", "user"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user/*/add/*", "user/xx/add/1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user/*/add/*", "user/add/1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user/*", "usermgt/list"));
+
+		// 带 :
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user:*", "user:"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user:*", "user:add"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user:*", "user:*"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user:*", "user"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user:*:add:*", "user:xx:add:1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user:*:add:*", "user:add:1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user:*", "usermgt:list"));
+
+		// 带 .
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user.*", "user."));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user.*", "user.add"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user.*", "user.*"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user.*", "user"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("user.*.add.*", "user.xx.add.1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user.*.add.*", "user.add.1"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("user.*", "usermgt.list"));
+
+		// 极端情况
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch(null, null));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch(null, "hello"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("hello*", null));
+
+		// url 匹配
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("*", "http://sa-sso-client1.com:9001/sso/login"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("http://sa-sso-client1.com:9001/*", "http://sa-sso-client1.com:9001/sso/login"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("http://sa-sso-client1.com:9001/*", "http://sa-sso-client1.com:9001/sso/login?name=1"));
+		Assertions.assertTrue(PkuseFoxUtil.vagueMatch("http://sa-sso-client1.com:9001/*", "http://sa-sso-client1.com:9001/sso/login?name=1&age=2"));
+		Assertions.assertFalse(PkuseFoxUtil.vagueMatch("http://sa-sso-client1.com:9001/*", "http://sa-sso-client1.com:9002"));
+	}
+
+    @Test
+    public void isWrapperType() {
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Integer.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Short.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Long.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Byte.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Float.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Double.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Boolean.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isWrapperType(Character.class));
+    	
+    	Assertions.assertFalse(PkuseFoxUtil.isWrapperType(int.class));
+    	Assertions.assertFalse(PkuseFoxUtil.isWrapperType(long.class));
+    	Assertions.assertFalse(PkuseFoxUtil.isWrapperType(Object.class));
+	}
+
+    @Test
+    public void isBasicType() {
+    	Assertions.assertTrue(PkuseFoxUtil.isBasicType(int.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isBasicType(Integer.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isBasicType(long.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isBasicType(Long.class));
+    	Assertions.assertTrue(PkuseFoxUtil.isBasicType(String.class));
+    	
+    	Assertions.assertFalse(PkuseFoxUtil.isBasicType(List.class));
+    	Assertions.assertFalse(PkuseFoxUtil.isBasicType(Map.class));
+	}
+	
+    @Test
+    public void getValueByType() {
+    	// 基础类型，转换 
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", int.class), 1);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", long.class), 1L);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Long.class), 1L);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", String.class), "1");
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", short.class), (short)1);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Short.class), (short)1);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", byte.class), (byte)1);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Byte.class), (byte)1);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", float.class), 1f);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Float.class), 1f);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", double.class), 1.0);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Double.class), 1.0);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", boolean.class), false);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Boolean.class), false);
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", char.class), '1');
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType("1", Character.class), '1');
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType(1, String.class), "1");
+
+    	// 复杂类型，还原 
+    	Object obj = new ArrayList<>();
+    	Assertions.assertEquals(PkuseFoxUtil.getValueByType(obj, List.class).getClass(), ArrayList.class);
+    }
+
+    @Test
+    public void joinParam() {
+    	// 参数为空时，返回原url
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com", null), "https://sa-token.com");
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com", ""), "https://sa-token.com");
+    	// url为空时，视为空字符串 
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam(null, "id=1"), "?id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("", "id=1"), "?id=1");
+    	
+    	// 各种情况的测试 
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com", "id=1"), "https://sa-token.com?id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com?", "id=1"), "https://sa-token.com?id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com?name=zhang", "id=1"), "https://sa-token.com?name=zhang&id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com?name=zhang&", "id=1"), "https://sa-token.com?name=zhang&id=1");
+    	
+    	// 重载方法测试 
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com?name=zhang&", "id", 1), "https://sa-token.com?name=zhang&id=1");
+    	// url或key为null时，不拼接 
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam(null, "id", 1), null);
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com", null, 1), "https://sa-token.com");
+    	// value为null时，会拼接出一个null字符串 
+    	Assertions.assertEquals(PkuseFoxUtil.joinParam("https://sa-token.com", "id", null), "https://sa-token.com?id=null");
+    }
+
+    @Test
+    public void joinSharpParam() {
+    	// 参数为空时，返回原url
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com", null), "https://sa-token.com");
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com", ""), "https://sa-token.com");
+    	// url为空时，视为空字符串 
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam(null, "id=1"), "#id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("", "id=1"), "#id=1");
+    	
+    	// 各种情况的测试 
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com", "id=1"), "https://sa-token.com#id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com#", "id=1"), "https://sa-token.com#id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com#name=zhang", "id=1"), "https://sa-token.com#name=zhang&id=1");
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com#name=zhang&", "id=1"), "https://sa-token.com#name=zhang&id=1");
+
+    	// 重载方法测试 
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com#name=zhang&", "id", 1), "https://sa-token.com#name=zhang&id=1");
+    	// url或key为null时，不拼接 
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam(null, "id", 1), null);
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com", null, 1), "https://sa-token.com");
+    	// value为null时，会拼接出一个null字符串 
+    	Assertions.assertEquals(PkuseFoxUtil.joinSharpParam("https://sa-token.com", "id", null), "https://sa-token.com#id=null");
+    }
+
+    @Test
+    public void spliceTwoUrl() {
+    	// 其中一个为null时，直接返回另一个
+    	Assertions.assertEquals(PkuseFoxUtil.spliceTwoUrl("https://sa-sso-server.com/sso/auth", null), "https://sa-sso-server.com/sso/auth");
+    	Assertions.assertEquals(PkuseFoxUtil.spliceTwoUrl(null, "https://sa-sso-server.com/sso/auth"), "https://sa-sso-server.com/sso/auth");
+    	
+    	// 正常情况，拼接
+    	Assertions.assertEquals(PkuseFoxUtil.spliceTwoUrl("https://sa-sso-server.com", "/sso/auth"), "https://sa-sso-server.com/sso/auth");
+    	
+    	// url2以http开头时，直接返回url2 
+    	Assertions.assertEquals(PkuseFoxUtil.spliceTwoUrl("https://sa-sso-server2.com", "https://sa-sso-server.com/sso/auth2"), "https://sa-sso-server.com/sso/auth2");
+    }
+    
+    @Test
+    public void arrayJoin() {
+    	Assertions.assertEquals(PkuseFoxUtil.arrayJoin(new String[] {"a", "b", "c"}), "a,b,c");
+    	Assertions.assertEquals(PkuseFoxUtil.arrayJoin(new String[] {}), "");
+    	Assertions.assertEquals(PkuseFoxUtil.arrayJoin(null), "");
+    }
+
+    @Test
+    public void isUrl() {
+    	// 详细用例见 PkuseFoxUtilIsUrlTest
+    	Assertions.assertTrue(PkuseFoxUtil.isUrl("https://sa-token.com"));
+    	Assertions.assertTrue(PkuseFoxUtil.isUrl("http://[::1]:9003/sso/login"));
+    	Assertions.assertFalse(PkuseFoxUtil.isUrl("https://www.baidu.com/,"));
+    }
+
+    @Test
+    public void encodeUrl() {
+    	Assertions.assertEquals(PkuseFoxUtil.encodeUrl("https://sa-token.com"), "https%3A%2F%2Fsa-token.com");
+    	Assertions.assertEquals(PkuseFoxUtil.decoderUrl("https%3A%2F%2Fsa-token.com"), "https://sa-token.com");
+    }
+
+    @Test
+    public void decoderUrlIfEncoded() {
+    	String plainWithEncodedQuery = "http://client.com/sso/login?back=http%3A%2F%2Fclient.com%2F%23%2Findex";
+    	Assertions.assertFalse(PkuseFoxUtil.isEncodedUrl(plainWithEncodedQuery));
+    	Assertions.assertTrue(PkuseFoxUtil.isEncodedUrl("https%3A%2F%2Fsa-token.com"));
+    	Assertions.assertFalse(PkuseFoxUtil.isEncodedUrl("https://sa-token.com"));
+    	Assertions.assertEquals(plainWithEncodedQuery, PkuseFoxUtil.decoderUrlIfEncoded(plainWithEncodedQuery));
+
+    	Assertions.assertEquals("https://sa-token.com", PkuseFoxUtil.decoderUrlIfEncoded("https%3A%2F%2Fsa-token.com"));
+    	Assertions.assertEquals("HTTP://client.com/sso/login", PkuseFoxUtil.decoderUrlIfEncoded("HTTP%3A%2F%2Fclient.com%2Fsso%2Flogin"));
+    	Assertions.assertEquals("https://sa-token.com", PkuseFoxUtil.decoderUrlIfEncoded("https://sa-token.com"));
+    	Assertions.assertNull(PkuseFoxUtil.decoderUrlIfEncoded(null));
+    	Assertions.assertEquals("", PkuseFoxUtil.decoderUrlIfEncoded(""));
+    }
+
+    @Test
+    public void encodeUrlIfNotEncoded() {
+    	Assertions.assertEquals("https%3A%2F%2Fsa-token.com", PkuseFoxUtil.encodeUrlIfNotEncoded("https://sa-token.com"));
+    	Assertions.assertEquals("https%3A%2F%2Fsa-token.com", PkuseFoxUtil.encodeUrlIfNotEncoded("https%3A%2F%2Fsa-token.com"));
+    	Assertions.assertEquals("HTTP%3A%2F%2Fclient.com%2Fsso%2Flogin", PkuseFoxUtil.encodeUrlIfNotEncoded("HTTP%3A%2F%2Fclient.com%2Fsso%2Flogin"));
+    	Assertions.assertEquals(PkuseFoxUtil.encodeUrl("/index"), PkuseFoxUtil.encodeUrlIfNotEncoded("/index"));
+    	Assertions.assertNull(PkuseFoxUtil.encodeUrlIfNotEncoded(null));
+    	Assertions.assertEquals("", PkuseFoxUtil.encodeUrlIfNotEncoded(""));
+    }
+    
+    @Test
+    public void convertStringToList() {
+    	List<String> list = PkuseFoxUtil.convertStringToList("a,b,,c");
+    	Assertions.assertEquals(list.size(), 3);
+    	Assertions.assertEquals(list.get(0), "a");
+    	Assertions.assertEquals(list.get(1), "b");
+    	Assertions.assertEquals(list.get(2), "c");
+
+    	List<String> list2 = PkuseFoxUtil.convertStringToList("a,");
+    	Assertions.assertEquals(list2.size(), 1);
+
+    	List<String> list3 = PkuseFoxUtil.convertStringToList(",");
+    	Assertions.assertEquals(list3.size(), 0);
+
+    	List<String> list4 = PkuseFoxUtil.convertStringToList("");
+    	Assertions.assertEquals(list4.size(), 0);
+
+    	List<String> list5 = PkuseFoxUtil.convertStringToList(null);
+    	Assertions.assertEquals(list5.size(), 0);
+    }
+
+    @Test
+    public void convertListToString() {
+    	// 正常
+    	List<String> list = Arrays.asList("a", "b", "c");
+    	Assertions.assertEquals(PkuseFoxUtil.convertListToString(list), "a,b,c");
+
+    	// 空数组 
+    	List<String> list2 = Arrays.asList();
+    	Assertions.assertEquals(PkuseFoxUtil.convertListToString(list2), "");
+    	
+    	// 空 
+    	List<String> list3 = null;
+    	Assertions.assertEquals(PkuseFoxUtil.convertListToString(list3), "");
+    }
+
+    @Test
+    public void convertStringToArray() {
+    	String[] array = PkuseFoxUtil.convertStringToArray("a,b,c");
+    	Assertions.assertEquals(array.length, 3);
+    	Assertions.assertEquals(array[0], "a");
+    	Assertions.assertEquals(array[1], "b");
+    	Assertions.assertEquals(array[2], "c");
+
+    	String[] array2 = PkuseFoxUtil.convertStringToArray("a,");
+    	Assertions.assertEquals(array2.length, 1);
+
+    	String[] array3 = PkuseFoxUtil.convertStringToArray(",");
+    	Assertions.assertEquals(array3.length, 0);
+
+    	String[] array4 = PkuseFoxUtil.convertStringToArray("");
+    	Assertions.assertEquals(array4.length, 0);
+
+    	String[] array5 = PkuseFoxUtil.convertStringToArray(null);
+    	Assertions.assertEquals(array5.length, 0);
+    }
+
+    @Test
+    public void convertArrayToString() {
+    	// 正常 
+    	String[] array = new String[] {"a", "b", "c"};
+    	Assertions.assertEquals(PkuseFoxUtil.convertArrayToString(array), "a,b,c");
+
+    	// null
+    	String[] array2 = null;
+    	Assertions.assertEquals(PkuseFoxUtil.convertArrayToString(array2), "");
+    	
+    	// 空数组 
+    	String[] array3 = new String[] {};
+    	Assertions.assertEquals(PkuseFoxUtil.convertArrayToString(array3), "");
+    }
+
+    @Test
+    public void emptyList() {
+    	List<String> list = PkuseFoxUtil.emptyList();
+    	Assertions.assertEquals(list.size(), 0);
+    }
+
+    @Test
+    public void toList() {
+    	List<String> list = PkuseFoxUtil.toList("a","b", "c");
+    	Assertions.assertEquals(list.size(), 3);
+    	Assertions.assertEquals(list.get(0), "a");
+    	Assertions.assertEquals(list.get(1), "b");
+    	Assertions.assertEquals(list.get(2), "c");
+    }
+
+	@Test
+	public void hasNonPrintableASCII() {
+		Assertions.assertFalse(PkuseFoxUtil.hasNonPrintableASCII("Hello World!"));
+		Assertions.assertTrue(PkuseFoxUtil.hasNonPrintableASCII("Hello\u0007World"));
+		Assertions.assertTrue(PkuseFoxUtil.hasNonPrintableASCII("Hello\tWorld"));
+		Assertions.assertTrue(PkuseFoxUtil.hasNonPrintableASCII("Hello\nWorld"));
+	}
+
+}

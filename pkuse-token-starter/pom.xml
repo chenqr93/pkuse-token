@@ -20,8 +20,9 @@
     <modules>
         <module>pkuse-token-jakarta-servlet</module>
         <module>pkuse-token-spring-boot3-starter</module>
+        <module>pkuse-token-spring-boot4-starter</module>
         <module>pkuse-token-spring-boot-webmvc-v3v4-common</module>
-        <module>pkuse-token-spring-boot-webmvc-reactor-v2v3v4-common</module>
+        <module>pkuse-token-spring-boot-webmvc-reactor-v3v4-common</module>
     </modules>
 
 </project>

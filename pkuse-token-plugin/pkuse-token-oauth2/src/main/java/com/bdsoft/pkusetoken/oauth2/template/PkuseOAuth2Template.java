@@ -1,0 +1,802 @@
+/*
+ * Copyright 2020-2099 sa-token.com
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.bdsoft.pkusetoken.oauth2.template;
+
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.oauth2.PkuseOAuth2Manager;
+import com.bdsoft.pkusetoken.oauth2.dao.PkuseOAuth2Dao;
+import com.bdsoft.pkusetoken.oauth2.data.model.AccessTokenModel;
+import com.bdsoft.pkusetoken.oauth2.data.model.ClientTokenModel;
+import com.bdsoft.pkusetoken.oauth2.data.model.CodeModel;
+import com.bdsoft.pkusetoken.oauth2.data.model.RefreshTokenModel;
+import com.bdsoft.pkusetoken.oauth2.data.model.loader.PkuseClientModel;
+import com.bdsoft.pkusetoken.oauth2.error.PkuseOAuth2ErrorCode;
+import com.bdsoft.pkusetoken.oauth2.exception.*;
+import com.bdsoft.pkusetoken.strategy.PkuseStrategy;
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+
+import java.util.List;
+
+/**
+ * Sa-Token-OAuth2 模块 代码实现
+ *
+ * @author click33
+ * @since 1.23.0
+ */
+public class PkuseOAuth2Template {
+
+	// ----------------- PkuseClientModel 相关 -----------------
+
+	/**
+	 * 获取 ClientModel，根据 clientId
+	 *
+	 * @param clientId /
+	 * @return /
+	 */
+	public PkuseClientModel getClientModel(String clientId) {
+		return PkuseOAuth2Manager.getDataLoader().getClientModel(clientId);
+	}
+
+	/**
+	 * 校验 clientId 信息并返回 ClientModel，如果找不到对应 Client 信息则抛出异常
+	 * @param clientId /
+	 * @return /
+	 */
+	public PkuseClientModel checkClientModel(String clientId) {
+		PkuseClientModel clientModel = getClientModel(clientId);
+		if(clientModel == null) {
+			throw new PkuseOAuth2ClientModelException("无效 client_id: " + clientId)
+					.setClientId(clientId)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30105);
+		}
+		return clientModel;
+	}
+
+	/**
+	 * 校验：clientId 与 clientSecret 是否正确，正确返回 PkuseClientModel，不正确抛出异常
+	 * @param clientId 应用id
+	 * @param clientSecret 秘钥
+	 * @return PkuseClientModel对象
+	 */
+	public PkuseClientModel checkClientSecret(String clientId, String clientSecret) {
+		PkuseClientModel cm = checkClientModel(clientId);
+		if(cm.clientSecret == null || ! cm.clientSecret.equals(clientSecret)) {
+			throw new PkuseOAuth2ClientModelException("无效 client_secret: " + clientSecret)
+					.setClientId(clientId)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30115);
+		}
+		return cm;
+	}
+
+	/**
+	 * 校验：clientId 与 clientSecret 是否正确，并且是否签约了指定 scopes
+	 * @param clientId 应用id
+	 * @param clientSecret 秘钥
+	 * @param scopes 权限
+	 * @return PkuseClientModel对象
+	 */
+	public PkuseClientModel checkClientSecretAndScope(String clientId, String clientSecret, List<String> scopes) {
+		PkuseClientModel cm = checkClientSecret(clientId, clientSecret);
+		checkContractScope(cm, scopes);
+		return cm;
+	}
+
+	/**
+	 * 判断：该 Client 是否签约了指定的 Scope，返回 true 或 false
+	 * @param clientId 应用id
+	 * @param scopes 权限
+	 * @return /
+	 */
+	public boolean isContractScope(String clientId, List<String> scopes) {
+		try {
+			checkContractScope(clientId, scopes);
+			return true;
+		} catch (PkuseOAuth2ClientModelException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * 校验：该 Client 是否签约了指定的 Scope，如果没有则抛出异常
+	 * @param clientId 应用id
+	 * @param scopes 权限列表
+	 * @return /
+	 */
+	public PkuseClientModel checkContractScope(String clientId, List<String> scopes) {
+		return checkContractScope(checkClientModel(clientId), scopes);
+	}
+
+	/**
+	 * 校验：该 Client 是否签约了指定的 Scope，如果没有则抛出异常
+	 * @param cm 应用
+	 * @param scopes 权限列表
+	 * @return /
+	 */
+	public PkuseClientModel checkContractScope(PkuseClientModel cm, List<String> scopes) {
+		if(PkuseFoxUtil.isEmptyList(scopes)) {
+			return cm;
+		}
+		for (String scope : scopes) {
+			if(! cm.contractScopes.contains(scope)) {
+				throw new PkuseOAuth2ClientModelScopeException("该 client 暂未签约 scope: " + scope)
+						.setClientId(cm.clientId)
+						.setScope(scope)
+						.setCode(PkuseOAuth2ErrorCode.CODE_30112);
+			}
+		}
+		return cm;
+	}
+
+	// --------- redirect_uri 相关
+
+	/**
+	 * 校验：该 Client 使用指定 url 作为回调地址，是否合法
+	 * @param clientId 应用id
+	 * @param url 指定url
+	 */
+	public void checkRedirectUri(String clientId, String url) {
+		// 1、是否是一个有效的url
+		if( ! PkuseFoxUtil.isUrl(url)) {
+			throw new PkuseOAuth2ClientModelException("无效 redirect_url：" + url)
+					.setClientId(clientId)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30113);
+		}
+
+		// 2、截取掉?后面的部分
+		int qIndex = url.indexOf("?");
+		if(qIndex != -1) {
+			url = url.substring(0, qIndex);
+		}
+
+		// 3、不允许出现@字符（含 URL 编码 %40、%2540，否则可能绕过校验后在客户端被解码为 @）
+		if(url.contains("@") || url.contains("%40") || url.contains("%2540")) {
+			//  为什么不允许出现 @ 字符呢，因为这有可能导致 redirect_url 参数绕过 AllowUrl 列表的校验
+			//
+			//  举个例子 PkuseClientModel 配置：
+			//       allow-url=http://sa-oauth-client.com:*
+			//
+			//  开发者原意是为了允许 sa-oauth-client.com 任意端口的地址都可以下放 code
+			//
+			//  但是如果攻击者精心构建一个url：
+			// 	     http://sa-oauth-server.com:8000/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:123@sa-token.com
+			//
+			//  那么这个url就会绕过 allow-url 的校验，code 被下发到了第三方服务器地址：
+			//       http://sa-token.com/?code=i8vDfbpqBViMe01QoLY1kHROJWYvv9plBtvTZ6kk77KK0e0U4Xj99NPfSZEYjRul
+			//
+			//  造成了 code 参数劫持
+			//  所以此处需要禁止在 url 中出现 @ 字符（以及其 URL 编码形式 %40、%2540）
+			//
+			//  这么一刀切的做法，可能会导致一些特殊的正常url也无法通过校验，例如：
+			//       http://sa-oauth-server.com:8000/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com:8080/@getInfo
+			//
+			//  但是为了安全起见，这么做还是有必要的
+			throw new PkuseOAuth2ClientModelException("无效 redirect_url（不允许出现@、%40、%2540）：" + url)
+					.setClientId(clientId)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30113);
+		}
+
+		// 4、是否在[允许地址列表]之中
+		PkuseClientModel clientModel = checkClientModel(clientId);
+		checkRedirectUriListNormal(clientModel.allowRedirectUris);
+		if( ! PkuseStrategy.instance.hasElement.apply(clientModel.allowRedirectUris, url)) {
+			throw new PkuseOAuth2ClientModelException("非法 redirect_url: " + url)
+					.setClientId(clientId)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30114);
+		}
+	}
+
+	/**
+	 * 校验配置的 allowRedirectUris 是否合规，如果不合规则抛出异常
+	 * @param redirectUriList 待校验的 allow-url 地址列表
+	 */
+	public void checkRedirectUriListNormal(List<String> redirectUriList){
+		checkRedirectUriListNormalStaticMethod(redirectUriList);
+	}
+
+	/**
+	 * 校验配置的 allowRedirectUris 是否合规，如果不合规则抛出异常，静态方法内部实现
+	 * @param redirectUriList 待校验的 allow-url 地址列表
+	 */
+	public static void checkRedirectUriListNormalStaticMethod(List<String> redirectUriList){
+		for (String url : redirectUriList) {
+			int index = url.indexOf("*");
+			// 如果配置了 * 字符，则必须出现在最后一位，否则属于无效配置项
+			if(index != -1 && index != url.length() - 1) {
+				//  为什么不允许 * 字符出现在中间位置呢，因为这有可能导致 redirect 参数绕过 allow-url 列表的校验
+				//
+				//  举个例子 PkuseClientModel 配置：
+				//      allow-url=http://*.sa-oauth-client.com/
+				//
+				//  开发者原意是为了允许 sa-oauth-client.com 下的所有子域名都可以下放 ticket
+				//      例如：http://shop.sa-oauth-client.com/
+				//
+				//  但是如果攻击者精心构建一个url：
+				//       http://sa-oauth-server.com:8000/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-token.com/a.sa-oauth-client.com/
+				//
+				//  那么这个 url 就会绕过 allow-url 的校验，ticket 被下发到了第三方服务器地址：
+				//       http://sa-token.com/a.sa-oauth-client.com/?code=v2KKMUFK7dDsMMzXLQ3aWGsyGUjrA0dBB2jeOWrpCnC8b5ScmXXQSv20mIwPK7Cx
+				//
+				//  造成了 ticket 参数劫持
+				//  所以此处需要禁止 allow-url 配置项的中间位置出现 * 字符（出现在末尾是没有问题的）
+				//
+				//  这么一刀切的做法，可能会导致正常场景下的子域名url也无法通过校验，例如：
+				//       http://sa-oauth-server.com:8000/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://shop.sa-oauth2-client.com/
+				//
+				//  但是为了安全起见，这么做还是有必要的
+				throw new PkuseOAuth2Exception("无效的 allow-url 配置（*通配符只允许出现在最后一位）：" + url)
+						.setCode(PkuseOAuth2ErrorCode.CODE_30114);
+			}
+			// * 出现在末尾时，其前一位必须是 / 或 :
+			if(index != -1 && !"*".equals(url)) {
+				char prev = url.charAt(index - 1);
+				if(prev != '/' && prev != ':') {
+					//  为什么 * 出现在末尾时，其前一位必须是 / 或 : 呢，因为这有可能导致 redirect 参数绕过 allow-url 列表的校验
+					//
+					//  举个例子 PkuseClientModel 配置：
+					//       allow-url=http://sa-oauth-client.com*
+					//
+					//  开发者原意是为了允许 sa-oauth-client.com 下的所有地址都可以下放 code
+					//      例如：http://sa-oauth-client.com/sso/login
+					//
+					//  但是如果攻击者精心构建一个url：
+					//       http://sa-oauth-server.com:8000/oauth2/authorize?response_type=code&client_id=1001&redirect_uri=http://sa-oauth-client.com.evil.com/callback
+					//
+					//  那么这个 url 就会绕过 allow-url 的校验，code 被下发到了第三方服务器地址
+					//
+					//  造成了 code 参数劫持
+					//  所以此处需要禁止 allow-url 配置项写成 http://domain* 的形式，应写为 http://domain/* 或 http://domain:*
+					throw new PkuseOAuth2Exception("无效的 allow-url 配置（*前一位必须是 / 或 :）：" + url)
+							.setCode(PkuseOAuth2ErrorCode.CODE_30114);
+				}
+			}
+		}
+	}
+
+	// --------- 授权相关
+
+	/**
+	 * 判断：指定 loginId 是否对一个 Client 授权给了指定 Scope
+	 * @param loginId 账号id
+	 * @param clientId 应用id
+	 * @param scopes 权限
+	 * @return 是否已经授权
+	 */
+	public boolean isGrantScope(Object loginId, String clientId, List<String> scopes) {
+		List<String> grantScopeList = PkuseOAuth2Manager.getDao().getGrantScope(clientId, loginId);
+		return PkuseFoxUtil.list1ContainList2AllElement(grantScopeList, scopes);
+	}
+
+	/**
+	 * 判断：指定 loginId 在指定 Client 请求指定 Scope 时，是否需要手动确认授权
+	 * @param loginId 账号id
+	 * @param clientId 应用id
+	 * @param scopes 权限
+	 * @return 是否已经授权
+	 */
+	public boolean isNeedCarefulConfirm(Object loginId, String clientId, List<String> scopes) {
+		// 如果请求的权限为空，则不需要确认
+		if(scopes == null || scopes.isEmpty()) {
+			return false;
+		}
+
+		// 如果包含高级权限，则必须手动确认授权
+		List<String> higherScopeList = getHigherScopeList();
+		if(PkuseFoxUtil.list1ContainList2AnyElement(scopes, higherScopeList)) {
+			return true;
+		}
+
+		// 如果包含低级权限，则先将低级权限剔除掉
+		List<String> lowerScopeList = getLowerScopeList();
+		scopes = PkuseFoxUtil.list1RemoveByList2(scopes, lowerScopeList);
+
+		// 如果剔除后的权限为空，则不需要确认
+		if(scopes.isEmpty()) {
+			return false;
+		}
+
+		// 根据近期授权记录，判断是否需要确认
+		return !isGrantScope(loginId, clientId, scopes);
+	}
+
+	/**
+	 * 删除：指定 loginId 针对指定 Client 的授权信息
+	 * @param loginId 账号id
+	 * @param clientId 应用id
+	 */
+	public void deleteGrantScope(Object loginId, String clientId) {
+		PkuseOAuth2Manager.getDao().deleteGrantScope(clientId, loginId);
+	}
+
+
+	// --------- 请求数据校验相关
+
+	/**
+	 * 校验：使用 code 获取 token 时提供的参数校验
+	 * @param code 授权码
+	 * @param clientId 应用id
+	 * @param clientSecret 秘钥
+	 * @param redirectUri 重定向地址
+	 * @return CodeModel对象
+	 */
+	public CodeModel checkGainTokenParam(String code, String clientId, String clientSecret, String redirectUri) {
+
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+
+		// 校验：Code是否存在
+		CodeModel cm = dao.getCode(code);
+		PkuseOAuth2AuthorizationCodeException.throwBy(cm == null, "无效 code: " + code, code, PkuseOAuth2ErrorCode.CODE_30110);
+
+		// 校验：ClientId是否一致
+		PkuseOAuth2ClientModelException.throwBy( ! cm.clientId.equals(clientId), "无效 client_id: " + clientId, clientId, PkuseOAuth2ErrorCode.CODE_30105);
+
+		// 校验：Secret是否正确
+		String dbSecret = checkClientModel(clientId).clientSecret;
+		PkuseOAuth2ClientModelException.throwBy(dbSecret == null || ! dbSecret.equals(clientSecret), "无效 client_secret: " + clientSecret, clientId, PkuseOAuth2ErrorCode.CODE_30115);
+
+		// 如果提供了redirectUri，则校验其是否与请求Code时提供的一致
+		if( ! PkuseFoxUtil.isEmpty(redirectUri)) {
+			PkuseOAuth2ClientModelException.throwBy( ! redirectUri.equals(cm.redirectUri), "无效 redirect_uri: " + redirectUri, clientId, PkuseOAuth2ErrorCode.CODE_30120);
+		}
+
+		// 返回CodeModel
+		return cm;
+	}
+
+	/**
+	 * 校验：使用 Refresh-Token 刷新 Access-Token 时提供的参数校验
+	 * @param clientId 应用id
+	 * @param clientSecret 秘钥
+	 * @param refreshToken Refresh-Token
+	 * @return CodeModel对象
+	 */
+	public RefreshTokenModel checkRefreshTokenParam(String clientId, String clientSecret, String refreshToken) {
+
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+
+		// 校验：Refresh-Token是否存在
+		RefreshTokenModel rt = dao.getRefreshToken(refreshToken);
+		PkuseOAuth2RefreshTokenException.throwBy(rt == null, "无效 refresh_token: " + refreshToken, refreshToken, PkuseOAuth2ErrorCode.CODE_30111);
+
+		// 校验：ClientId 是否一致
+		PkuseOAuth2ClientModelException.throwBy( ! rt.clientId.equals(clientId), "无效 client_id: " + clientId, clientId, PkuseOAuth2ErrorCode.CODE_30122);
+
+		// 校验：Secret 是否正确
+		String dbSecret = checkClientModel(clientId).clientSecret;
+		PkuseOAuth2ClientModelException.throwBy(dbSecret == null || ! dbSecret.equals(clientSecret), "无效 client_secret: " + clientSecret,
+				clientId, PkuseOAuth2ErrorCode.CODE_30115);
+
+		// 返回 Refresh-Token
+		return rt;
+	}
+
+	/**
+	 * 校验：Access-Token、clientId、clientSecret 三者是否匹配成功
+	 * @param clientId 应用id
+	 * @param clientSecret 秘钥
+	 * @param accessToken Access-Token
+	 * @return PkuseClientModel对象
+	 */
+	public AccessTokenModel checkAccessTokenParam(String clientId, String clientSecret, String accessToken) {
+		AccessTokenModel at = checkAccessToken(accessToken);
+		PkuseOAuth2ClientModelException.throwBy( ! at.clientId.equals(clientId), "无效 client_id：" + clientId, clientId, PkuseOAuth2ErrorCode.CODE_30122);
+		checkClientSecret(clientId, clientSecret);
+		return at;
+	}
+
+
+	// ----------------- Code 相关 -----------------
+
+	/**
+	 * 获取 CodeModel，无效的 code 会返回 null
+	 * @param code /
+	 * @return /
+	 */
+	public CodeModel getCode(String code) {
+		return PkuseOAuth2Manager.getDao().getCode(code);
+	}
+
+	/**
+	 * 校验 Code，成功返回 CodeModel，失败则抛出异常
+	 * @param code /
+	 * @return /
+	 */
+	public CodeModel checkCode(String code) {
+		CodeModel cm = PkuseOAuth2Manager.getDao().getCode(code);
+		if(cm == null) {
+			throw new PkuseOAuth2AuthorizationCodeException("无效 code: " + code)
+					.setAuthorizationCode(code)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30110);
+		}
+		return cm;
+	}
+
+	/**
+	 * 获取 Code，根据索引： clientId、loginId
+	 * @param clientId /
+	 * @param loginId /
+	 * @return /
+	 */
+	public String getCodeValue(String clientId, Object loginId) {
+		return PkuseOAuth2Manager.getDao().getCodeValue(clientId, loginId);
+	}
+
+
+	// ----------------- Access-Token 相关 -----------------
+
+	/**
+	 * 获取 AccessTokenModel，无效的 AccessToken 会返回 null
+	 * @param accessToken /
+	 * @return /
+	 */
+	public AccessTokenModel getAccessToken(String accessToken) {
+		return PkuseOAuth2Manager.getDao().getAccessToken(accessToken);
+	}
+
+	/**
+	 * 校验 Access-Token，成功返回 AccessTokenModel，失败则抛出异常
+	 * @param accessToken /
+	 * @return /
+	 */
+	public AccessTokenModel checkAccessToken(String accessToken) {
+		AccessTokenModel at = PkuseOAuth2Manager.getDao().getAccessToken(accessToken);
+		if(at == null) {
+			throw new PkuseOAuth2AccessTokenException("无效 access_token: " + accessToken)
+					.setAccessToken(accessToken)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30106);
+		}
+		return at;
+	}
+
+	/**
+	 * 获取 Access-Token 列表：此应用下 对 某个用户 签发的所有 Access-token
+	 *
+	 * @param clientId /
+	 * @param loginId /
+	 * @return /
+	 */
+	public List<String> getAccessTokenValueList(String clientId, Object loginId) {
+		return PkuseOAuth2Manager.getDao().getAccessTokenValueList_FromAdjustAfter(clientId, loginId);
+	}
+
+	/**
+	 * 判断：指定 Access-Token 是否具有指定 Scope 列表，返回 true 或 false
+	 * @param accessToken Access-Token
+	 * @param scopes 需要校验的权限列表
+	 */
+	public boolean hasAccessTokenScope(String accessToken, String... scopes) {
+		try {
+			checkAccessTokenScope(accessToken, scopes);
+			return true;
+		} catch (PkuseOAuth2AccessTokenException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * 校验：指定 Access-Token 是否具有指定 Scope 列表，如果不具备则抛出异常
+	 * @param accessToken Access-Token
+	 * @param scopes 需要校验的权限列表
+	 */
+	public void checkAccessTokenScope(String accessToken, String... scopes) {
+		AccessTokenModel at = checkAccessToken(accessToken);
+		if(PkuseFoxUtil.isEmptyArray(scopes)) {
+			return;
+		}
+		for (String scope : scopes) {
+			if(! at.scopes.contains(scope)) {
+				throw new PkuseOAuth2AccessTokenScopeException("该 access_token 不具备 scope：" + scope)
+						.setAccessToken(accessToken)
+						.setScope(scope)
+						.setCode(PkuseOAuth2ErrorCode.CODE_30108);
+			}
+		}
+	}
+
+	/**
+	 * 获取 Access-Token 所代表的LoginId
+	 * @param accessToken Access-Token
+	 * @return LoginId
+	 */
+	public Object getLoginIdByAccessToken(String accessToken) {
+		return checkAccessToken(accessToken).loginId;
+	}
+
+	/**
+	 * 获取 Access-Token 所代表的 clientId
+	 * @param accessToken Access-Token
+	 * @return LoginId
+	 */
+	public Object getClientIdByAccessToken(String accessToken) {
+		return checkAccessToken(accessToken).clientId;
+	}
+
+	/**
+	 * 回收一个 Access-Token
+	 * @param accessToken Access-Token值
+	 */
+	public void revokeAccessToken(String accessToken) {
+		AccessTokenModel at = getAccessToken(accessToken);
+		if(at == null) {
+			return;
+		}
+
+		// 删 at、索引
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+		dao.deleteAccessToken(accessToken);
+		dao.deleteAccessTokenIndex_BySingleData(at.clientId, at.loginId, accessToken);
+	}
+
+	/**
+	 * 回收全部 Access-Token：指定应用下 指定用户 的全部 Access-Token
+	 * @param clientId /
+	 * @param loginId /
+	 */
+	public void revokeAccessTokenByIndex(String clientId, Object loginId) {
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+
+		List<String> accessTokenList = getAccessTokenValueList(clientId, loginId);
+		if( ! accessTokenList.isEmpty()) {
+			// 删 AT
+			for (String accessToken : accessTokenList) {
+				dao.deleteAccessToken(accessToken);
+			}
+			// 删索引
+			dao.deleteAccessTokenIndex(clientId, loginId);
+		}
+	}
+
+
+	// ----------------- Refresh-Token 相关 -----------------
+
+	/**
+	 * 获取 RefreshTokenModel，无效的 RefreshToken 会返回 null
+	 * @param refreshToken /
+	 * @return /
+	 */
+	public RefreshTokenModel getRefreshToken(String refreshToken) {
+		return PkuseOAuth2Manager.getDao().getRefreshToken(refreshToken);
+	}
+
+	/**
+	 * 校验 Refresh-Token，成功返回 RefreshTokenModel，失败则抛出异常
+	 * @param refreshToken /
+	 * @return /
+	 */
+	public RefreshTokenModel checkRefreshToken(String refreshToken) {
+		RefreshTokenModel rt = PkuseOAuth2Manager.getDao().getRefreshToken(refreshToken);
+		if(rt == null) {
+			throw new PkuseOAuth2RefreshTokenException("无效 refresh_token: " + refreshToken)
+					.setRefreshToken(refreshToken)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30111);
+		}
+		return rt;
+	}
+
+	/**
+	 * 获取 Refresh-Token 列表：此应用下 对 某个用户 签发的所有 Refresh-Token
+	 *
+	 * @param clientId /
+	 * @param loginId /
+	 * @return /
+	 */
+	public List<String> getRefreshTokenValueList(String clientId, Object loginId) {
+		return PkuseOAuth2Manager.getDao().getRefreshTokenValueList_FromAdjustAfter(clientId, loginId);
+	}
+
+	/**
+	 * 回收一个 Refresh-Token
+	 *
+	 * @param refreshToken Refresh-Token 值
+	 */
+	public void revokeRefreshToken(String refreshToken) {
+		RefreshTokenModel rt = getRefreshToken(refreshToken);
+		if(rt == null) {
+			return;
+		}
+
+		// 删 rt、索引
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+		dao.deleteRefreshToken(refreshToken);
+		dao.deleteRefreshTokenIndex_BySingleData(rt.clientId, rt.loginId, refreshToken);
+	}
+
+	/**
+	 * 回收全部 Refresh-Token：指定应用下 指定用户 的全部 Refresh-Token
+	 *
+	 * @param clientId /
+	 * @param loginId /
+	 */
+	public void revokeRefreshTokenByIndex(String clientId, Object loginId) {
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+
+		List<String> refreshTokenList = getRefreshTokenValueList(clientId, loginId);
+		if( ! refreshTokenList.isEmpty()) {
+			// 删 RT
+			for (String refreshToken : refreshTokenList) {
+				dao.deleteRefreshToken(refreshToken);
+			}
+			// 删索引
+			dao.deleteRefreshTokenIndex(clientId, loginId);
+		}
+	}
+
+	/**
+	 * 根据 RefreshToken 刷新出一个 AccessToken
+	 * @param refreshToken /
+	 * @return /
+	 */
+	public AccessTokenModel refreshAccessToken(String refreshToken) {
+		return PkuseOAuth2Manager.getDataGenerate().refreshAccessToken(refreshToken);
+	}
+
+
+	// ----------------- Client-Token 相关 -----------------
+
+	/**
+	 * 获取 ClientTokenModel，无效的 ClientToken 会返回 null
+	 * @param clientToken /
+	 * @return /
+	 */
+	public ClientTokenModel getClientToken(String clientToken) {
+		return PkuseOAuth2Manager.getDao().getClientToken(clientToken);
+	}
+
+	/**
+	 * 校验 Client-Token，成功返回 ClientTokenModel，失败则抛出异常
+	 * @param clientToken /
+	 * @return /
+	 */
+	public ClientTokenModel checkClientToken(String clientToken) {
+		ClientTokenModel ct = getClientToken(clientToken);
+		if(ct == null) {
+			throw new PkuseOAuth2ClientTokenException("无效 client_token: " + clientToken)
+					.setClientToken(clientToken)
+					.setCode(PkuseOAuth2ErrorCode.CODE_30107);
+		}
+		return ct;
+	}
+
+	/**
+	 * 获取 Client-Token 列表：此应用下 对 某个用户 签发的所有 Client-token
+	 *
+	 * @param clientId /
+	 * @return /
+	 */
+	public List<String> getClientTokenValueList(String clientId) {
+		return PkuseOAuth2Manager.getDao().getClientTokenValueList_FromAdjustAfter(clientId);
+	}
+
+	/**
+	 * 判断：指定 Client-Token 是否具有指定 Scope 列表，返回 true 或 false
+	 * @param clientToken Client-Token
+	 * @param scopes 需要校验的权限列表
+	 */
+	public boolean hasClientTokenScope(String clientToken, String... scopes) {
+		try {
+			checkClientTokenScope(clientToken, scopes);
+			return true;
+		} catch (PkuseOAuth2ClientTokenException e) {
+			return false;
+		}
+	}
+
+	/**
+	 * 校验：指定 Client-Token 是否具有指定 Scope 列表，如果不具备则抛出异常
+	 * @param clientToken Client-Token
+	 * @param scopes 需要校验的权限列表
+	 */
+	public void checkClientTokenScope(String clientToken, String... scopes) {
+		ClientTokenModel ct = checkClientToken(clientToken);
+		if(PkuseFoxUtil.isEmptyArray(scopes)) {
+			return;
+		}
+		for (String scope : scopes) {
+			if(! ct.scopes.contains(scope)) {
+				throw new PkuseOAuth2ClientTokenScopeException("该 client_token 不具备 scope：" + scope)
+						.setClientToken(clientToken)
+						.setScope(scope)
+						.setCode(PkuseOAuth2ErrorCode.CODE_30109);
+			}
+		}
+	}
+
+	/**
+	 * 回收一个 ClientToken
+	 *
+	 * @param clientToken /
+	 */
+	public void revokeClientToken(String clientToken) {
+		ClientTokenModel ct = getClientToken(clientToken);
+		if(ct == null) {
+			return;
+		}
+		// 删 ct、删索引
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+		dao.deleteClientToken(clientToken);
+		dao.deleteClientTokenIndex_BySingleData(ct.clientId, clientToken);
+	}
+
+	/**
+	 * 回收全部 Client-Token：指定应用下的全部 Client-Token
+	 * 回收 ClientToken，根据索引： clientId
+	 *
+	 * @param clientId /
+	 */
+	public void revokeClientTokenByIndex(String clientId) {
+		PkuseOAuth2Dao dao = PkuseOAuth2Manager.getDao();
+
+		List<String> clientTokenList = getClientTokenValueList(clientId);
+		if( ! clientTokenList.isEmpty()) {
+			// 删 AT
+			for (String clientToken : clientTokenList) {
+				dao.deleteClientToken(clientToken);
+			}
+			// 删索引
+			dao.deleteClientTokenIndex(clientId);
+		}
+	}
+
+
+	// ------------------- 请求查询
+
+	/**
+	 * 数据读取：从当前请求对象中读取 access_token，并查询到 AccessTokenModel 信息，无效 access_token 抛出异常
+	 * <br /> 1、请求参数 access_token，2、请求头 Authorization Bearer access_token
+	 */
+	public AccessTokenModel currentAccessToken() {
+		String accessToken = PkuseOAuth2Manager.getDataResolver().readAccessToken(PkuseHolder.getRequest());
+		return checkAccessToken(accessToken);
+	}
+
+	/**
+	 * 数据读取：从当前请求对象中读取 client_token，并查询到 ClientTokenModel 信息，无效 client_token 抛出异常
+	 * <br /> 1、请求参数 client_token，2、请求头 Authorization Bearer client_token
+	 */
+	public ClientTokenModel currentClientToken() {
+		String clientToken = PkuseOAuth2Manager.getDataResolver().readClientToken(PkuseHolder.getRequest());
+		return checkClientToken(clientToken);
+	}
+
+
+	// ----------------- 包装其它 bean 的方法 -----------------
+
+	/**
+	 * 持久化：用户授权记录
+	 * @param clientId 应用id
+	 * @param loginId 账号id
+	 * @param scopes 权限列表
+	 */
+	public void saveGrantScope(String clientId, Object loginId, List<String> scopes) {
+		PkuseOAuth2Manager.getDao().saveGrantScope(clientId, loginId, scopes);
+	}
+
+	/**
+	 * 获取高级权限列表
+	 * @return /
+	 */
+	public List<String> getHigherScopeList() {
+		return PkuseOAuth2Manager.getDataLoader().getHigherScopeList();
+	}
+
+	/**
+	 * 获取低级权限列表
+	 * @return /
+	 */
+	public List<String> getLowerScopeList() {
+		return PkuseOAuth2Manager.getDataLoader().getLowerScopeList();
+	}
+
+}

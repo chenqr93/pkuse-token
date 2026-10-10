@@ -1,13 +1,13 @@
 package com.pj.sso;
 
-import com.bdsoft.satoken.context.SaHolder;
-import com.bdsoft.satoken.spring.SpringMVCUtil;
-import com.bdsoft.satoken.sso.message.SaSsoMessage;
-import com.bdsoft.satoken.sso.processor.SaSsoClientProcessor;
-import com.bdsoft.satoken.sso.template.SaSsoClientTemplate;
-import com.bdsoft.satoken.sso.template.SaSsoClientUtil;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.spring.SpringMVCUtil;
+import com.bdsoft.pkusetoken.sso.message.PkuseSsoMessage;
+import com.bdsoft.pkusetoken.sso.processor.PkuseSsoClientProcessor;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoClientTemplate;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoClientUtil;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import com.pj.resdk.StpLogicForHttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,19 +46,19 @@ public class SsoClientController {
 	 */
 	@RequestMapping("/sso/*")
 	public Object ssoLogin() {
-		return SaSsoClientProcessor.instance.dister();
+		return PkuseSsoClientProcessor.instance.dister();
 	}
 
 	// 当前应用独自注销 (不退出其它应用)
 	@RequestMapping("/sso/logoutByAlone")
 	public Object logoutByAlone(HttpSession session) {
 		session.removeAttribute("userId");
-		return SaSsoClientProcessor.instance._ssoLogoutBack(SaHolder.getRequest(), SaHolder.getResponse());
+		return PkuseSsoClientProcessor.instance._ssoLogoutBack(PkuseHolder.getRequest(), PkuseHolder.getResponse());
 	}
 
 	// 配置SSO相关参数
 	@Autowired
-	private void configSso(SaSsoClientTemplate ssoClientTemplate) {
+	private void configSso(PkuseSsoClientTemplate ssoClientTemplate) {
 
 		// 自定义底层使用的会话操作对象
 		ssoClientTemplate.setStpLogic(new StpLogicForHttpSession(StpUtil.TYPE));
@@ -67,7 +67,7 @@ public class SsoClientController {
 		ssoClientTemplate.strategy.ticketResultHandle = (ctr, back) -> {
 			HttpSession session = SpringMVCUtil.getRequest().getSession();
 			session.setAttribute("userId", ctr.loginId);
-			return SaHolder.getResponse().redirect(back);
+			return PkuseHolder.getResponse().redirect(back);
 		};
 	}
 
@@ -80,10 +80,10 @@ public class SsoClientController {
 		}
 
 		// 推送消息
-		SaSsoMessage message = new SaSsoMessage();
+		PkuseSsoMessage message = new PkuseSsoMessage();
 		message.setType("userinfo");
 		message.set("loginId", session.getAttribute("userId"));
-		SaResult result = SaSsoClientUtil.pushMessageAsSaResult(message);
+		PkuseResult result = PkuseSsoClientUtil.pushMessageAsSaResult(message);
 
         // 返回给前端 
 		return result;

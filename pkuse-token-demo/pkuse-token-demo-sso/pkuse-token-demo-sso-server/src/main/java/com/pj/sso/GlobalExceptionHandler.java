@@ -3,7 +3,7 @@ package com.pj.sso;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 
 /**
  * 全局异常处理 
@@ -15,9 +15,9 @@ public class GlobalExceptionHandler {
 
 	// 全局异常拦截 
 	@ExceptionHandler
-	public SaResult handlerException(Exception e) {
+	public PkuseResult handlerException(Exception e) {
 		e.printStackTrace(); 
-		return SaResult.error(e.getMessage());
+		return PkuseResult.error(e.getMessage());
 	}
 	
 }

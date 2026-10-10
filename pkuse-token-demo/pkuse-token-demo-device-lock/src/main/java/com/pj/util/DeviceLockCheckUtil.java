@@ -1,7 +1,7 @@
 package com.pj.util;
 
-import com.bdsoft.satoken.SaManager;
-import com.bdsoft.satoken.util.SaFoxUtil;
+import com.bdsoft.pkusetoken.PkuseManager;
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
 
 /**
  * 设备锁操作工具类
@@ -16,10 +16,10 @@ public class DeviceLockCheckUtil {
      * @param userId /
      */
     public static void setDeviceIdToUserId(String deviceId, long userId) {
-        if(SaFoxUtil.isEmpty(deviceId) || SaFoxUtil.isEmpty(userId)) {
+        if(PkuseFoxUtil.isEmpty(deviceId) || PkuseFoxUtil.isEmpty(userId)) {
             throw new RuntimeException("设备id或用户id不能为空");
         }
-        SaManager.getSaTokenDao().set(saveKeyPrefix() + deviceId, String.valueOf(userId), 1200);
+        PkuseManager.getSaTokenDao().set(saveKeyPrefix() + deviceId, String.valueOf(userId), 1200);
     }
 
     /**
@@ -27,7 +27,7 @@ public class DeviceLockCheckUtil {
      * @param deviceId /
      */
     public static long getUserIdByDeviceId(String deviceId) {
-        String userIdStr = SaManager.getSaTokenDao().get(saveKeyPrefix() + deviceId);
+        String userIdStr = PkuseManager.getSaTokenDao().get(saveKeyPrefix() + deviceId);
         if(userIdStr == null) {
             throw new RuntimeException("此设备id目前未绑定任何用户");
         }
@@ -36,7 +36,7 @@ public class DeviceLockCheckUtil {
 
     // 返回数据保存时使用的前缀
     public static Object saveKeyPrefix() {
-        return SaManager.getConfig().getTokenName() + ":device-to-userid:";
+        return PkuseManager.getConfig().getTokenName() + ":device-to-userid:";
     }
 
 }

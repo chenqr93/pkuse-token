@@ -1,17 +1,17 @@
 package com.pj.test;
 
-import com.bdsoft.satoken.servlet.util.SaTokenContextJakartaServletUtil;
-import com.bdsoft.satoken.spring.SpringMVCUtil;
+import com.bdsoft.pkusetoken.servlet.util.PkuseTokenContextJakartaServletUtil;
+import com.bdsoft.pkusetoken.spring.SpringMVCUtil;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.bdsoft.satoken.SaManager;
-import com.bdsoft.satoken.dao.SaTokenDao;
-import com.bdsoft.satoken.jwt.StpLogicJwtForSimple;
-import com.bdsoft.satoken.session.SaSession;
-import com.bdsoft.satoken.stp.SaLoginConfig;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaTokenConsts;
+import com.bdsoft.pkusetoken.PkuseManager;
+import com.bdsoft.pkusetoken.dao.PkuseTokenDao;
+import com.bdsoft.pkusetoken.jwt.StpLogicJwtForSimple;
+import com.bdsoft.pkusetoken.session.PkuseSession;
+import com.bdsoft.pkusetoken.stp.parameter.PkuseLoginParameter;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseTokenConsts;
 import cn.hutool.json.JSONObject;
 import cn.hutool.jwt.JWT;
 
@@ -26,13 +26,13 @@ import cn.hutool.jwt.JWT;
 public class JwtForSimpleTest {
 
 	// 持久化Bean 
-	static SaTokenDao dao;
+	static PkuseTokenDao dao;
 	
 	// 开始 
 	@BeforeAll
     public static void beforeClass() {
     	System.out.println("\n\n------------------------ JwtForSimpleTest star ...");
-    	dao = SaManager.getSaTokenDao();
+    	dao = PkuseManager.getSaTokenDao();
     	StpUtil.setStpLogic(new StpLogicJwtForSimple());
     }
 
@@ -44,12 +44,12 @@ public class JwtForSimpleTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		SaTokenContextJakartaServletUtil.setContext(SpringMVCUtil.getRequest(), SpringMVCUtil.getResponse());
+		PkuseTokenContextJakartaServletUtil.setContext(SpringMVCUtil.getRequest(), SpringMVCUtil.getResponse());
 	}
 
 	@AfterEach
 	public void afterEach() {
-		SaTokenContextJakartaServletUtil.clearContext();
+		PkuseTokenContextJakartaServletUtil.clearContext();
 	}
 
     // 测试：登录 
@@ -63,7 +63,7 @@ public class JwtForSimpleTest {
     	Assertions.assertTrue(StpUtil.isLogin());	
     	Assertions.assertNotNull(token);	// token不为null
     	Assertions.assertEquals(StpUtil.getLoginIdAsLong(), 10001);	// loginId=10001 
-    	Assertions.assertEquals(StpUtil.getLoginDevice(), SaTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);	// 登录设备类型
+    	Assertions.assertEquals(StpUtil.getLoginDevice(), PkuseTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);	// 登录设备类型
 
     	// token 验证 
     	JWT jwt = JWT.of(token);
@@ -74,7 +74,7 @@ public class JwtForSimpleTest {
     	// token存在 
     	Assertions.assertEquals(dao.get("satoken:login:token:" + token), "10001");
     	// Session 存在 
-    	SaSession session = dao.getSession("satoken:login:session:" + 10001);
+    	PkuseSession session = dao.getSession("satoken:login:session:" + 10001);
     	Assertions.assertNotNull(session);
     	Assertions.assertEquals(session.getId(), "satoken:login:session:" + 10001);
     	Assertions.assertTrue(session.getTerminalList().size() >= 1);
@@ -84,7 +84,7 @@ public class JwtForSimpleTest {
     @Test
     public void getExtra() {
     	// 登录
-    	StpUtil.login(10001, SaLoginConfig.setExtra("name", "zhangsan"));
+    	StpUtil.login(10001, new PkuseLoginParameter().setExtra("name", "zhangsan"));
     	String tokenValue = StpUtil.getTokenValue();
     	
     	// 可以取到

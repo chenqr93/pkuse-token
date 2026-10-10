@@ -3,14 +3,14 @@ package com.pj.test;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bdsoft.satoken.annotation.SaCheckHttpBasic;
-import com.bdsoft.satoken.annotation.SaCheckLogin;
-import com.bdsoft.satoken.annotation.SaCheckPermission;
-import com.bdsoft.satoken.annotation.SaCheckRole;
-import com.bdsoft.satoken.annotation.SaCheckSafe;
-import com.bdsoft.satoken.annotation.SaMode;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckHttpBasic;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckLogin;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckPermission;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckRole;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckSafe;
+import com.bdsoft.pkusetoken.annotation.PkuseMode;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 
 /**
  * 注解鉴权测试 
@@ -22,59 +22,59 @@ import com.bdsoft.satoken.util.SaResult;
 public class AtController {
 
 	// 登录认证，登录之后才可以进入方法  ---- http://localhost:8081/at/checkLogin 
-	@SaCheckLogin
+	@PkuseCheckLogin
 	@RequestMapping("checkLogin")
-	public SaResult checkLogin() {
-		return SaResult.ok();
+	public PkuseResult checkLogin() {
+		return PkuseResult.ok();
 	}
 	
 	// 权限认证，具备user-add权限才可以进入方法  ---- http://localhost:8081/at/checkPermission 
-	@SaCheckPermission("user-add")
+	@PkuseCheckPermission("user-add")
 	@RequestMapping("checkPermission")
-	public SaResult checkPermission() {
-		return SaResult.ok();
+	public PkuseResult checkPermission() {
+		return PkuseResult.ok();
 	}
 
 	// 权限认证，同时具备所有权限才可以进入  ---- http://localhost:8081/at/checkPermissionAnd 
-	@SaCheckPermission({"user-add", "user-delete", "user-update"})
+	@PkuseCheckPermission({"user-add", "user-delete", "user-update"})
 	@RequestMapping("checkPermissionAnd")
-	public SaResult checkPermissionAnd() {
-		return SaResult.ok();
+	public PkuseResult checkPermissionAnd() {
+		return PkuseResult.ok();
 	}
 
 	// 权限认证，只要具备其中一个就可以进入  ---- http://localhost:8081/at/checkPermissionOr 
-	@SaCheckPermission(value = {"user-add", "user-delete", "user-update"}, mode = SaMode.OR)
+	@PkuseCheckPermission(value = {"user-add", "user-delete", "user-update"}, mode = PkuseMode.OR)
 	@RequestMapping("checkPermissionOr")
-	public SaResult checkPermissionOr() {
-		return SaResult.ok();
+	public PkuseResult checkPermissionOr() {
+		return PkuseResult.ok();
 	}
 
 	// 角色认证，只有具备admin角色才可以进入  ---- http://localhost:8081/at/checkRole 
-	@SaCheckRole("admin")
+	@PkuseCheckRole("admin")
 	@RequestMapping("checkRole")
-	public SaResult checkRole() {
-		return SaResult.ok();
+	public PkuseResult checkRole() {
+		return PkuseResult.ok();
 	}
 
 	// 完成二级认证  ---- http://localhost:8081/at/openSafe 
 	@RequestMapping("openSafe")
-	public SaResult openSafe() {
+	public PkuseResult openSafe() {
 		StpUtil.openSafe(200); // 打开二级认证，有效期为200秒
-		return SaResult.ok();
+		return PkuseResult.ok();
 	}
 	
 	// 通过二级认证后才可以进入  ---- http://localhost:8081/at/checkSafe 
-	@SaCheckSafe
+	@PkuseCheckSafe
 	@RequestMapping("checkSafe")
-	public SaResult checkSafe() {
-		return SaResult.ok();
+	public PkuseResult checkSafe() {
+		return PkuseResult.ok();
 	}
 	
 	// 通过Basic认证后才可以进入  ---- http://localhost:8081/at/checkBasic 
-	@SaCheckHttpBasic(account = "sa:123456")
+	@PkuseCheckHttpBasic(account = "sa:123456")
 	@RequestMapping("checkBasic")
-	public SaResult checkBasic() {
-		return SaResult.ok();
+	public PkuseResult checkBasic() {
+		return PkuseResult.ok();
 	}
 	
 }

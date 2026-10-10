@@ -1,8 +1,8 @@
 //package com.pj.oauth2.custom_grant_type;
 //
-//import com.bdsoft.satoken.oauth2.exception.SaOAuth2Exception;
-//import com.bdsoft.satoken.oauth2.granttype.handler.PasswordGrantTypeHandler;
-//import com.bdsoft.satoken.oauth2.granttype.handler.model.PasswordAuthResult;
+//import com.bdsoft.pkusetoken.oauth2.exception.PkuseOAuth2Exception;
+//import com.bdsoft.pkusetoken.oauth2.granttype.handler.PasswordGrantTypeHandler;
+//import com.bdsoft.pkusetoken.oauth2.granttype.handler.model.PasswordAuthResult;
 //import org.springframework.stereotype.Component;
 //
 ///**
@@ -20,7 +20,7 @@
 //            long userId = 10001;
 //            return new PasswordAuthResult(userId);
 //        } else {
-//            throw new SaOAuth2Exception("无效账号密码");
+//            throw new PkuseOAuth2Exception("无效账号密码");
 //        }
 //    }
 //

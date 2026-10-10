@@ -1,6 +1,6 @@
 package com.pj.test.model;
 
-import com.bdsoft.satoken.json.SaJsonType;
+import com.bdsoft.pkusetoken.json.PkuseJsonType;
 
 /**
  * User 实体类 
@@ -8,7 +8,7 @@ import com.bdsoft.satoken.json.SaJsonType;
  * @author click33
  * @since 2022-10-15
  */
-public class SysUser implements SaJsonType {
+public class SysUser implements PkuseJsonType {
 
 	public SysUser() {
 	}

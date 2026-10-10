@@ -1,8 +1,8 @@
 //package com.pj.oauth2.custom_scope;
 //
-//import com.bdsoft.satoken.oauth2.data.model.AccessTokenModel;
-//import com.bdsoft.satoken.oauth2.data.model.ClientTokenModel;
-//import com.bdsoft.satoken.oauth2.scope.handler.SaOAuth2ScopeHandlerInterface;
+//import com.bdsoft.pkusetoken.oauth2.data.model.AccessTokenModel;
+//import com.bdsoft.pkusetoken.oauth2.data.model.ClientTokenModel;
+//import com.bdsoft.pkusetoken.oauth2.scope.handler.PkuseOAuth2ScopeHandlerInterface;
 //import org.springframework.stereotype.Component;
 //
 //import java.util.LinkedHashMap;
@@ -14,7 +14,7 @@
 // * @since 2024/8/20
 // */
 //@Component
-//public class UserinfoScopeHandler implements SaOAuth2ScopeHandlerInterface {
+//public class UserinfoScopeHandler implements PkuseOAuth2ScopeHandlerInterface {
 //
 //    // 指示当前处理器所要处理的 scope
 //    @Override

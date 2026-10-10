@@ -20,6 +20,7 @@
     <modules>
         <!-- 通用插件 -->
         <module>pkuse-token-jackson</module>
+        <module>pkuse-token-jackson3</module>
         <module>pkuse-token-jwt</module>
         <module>pkuse-token-sso</module>
         <module>pkuse-token-oauth2</module>

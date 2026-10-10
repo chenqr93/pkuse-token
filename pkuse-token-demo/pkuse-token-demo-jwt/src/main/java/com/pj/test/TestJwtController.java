@@ -1,9 +1,9 @@
 package com.pj.test;
 
-import com.bdsoft.satoken.annotation.SaCheckLogin;
-import com.bdsoft.satoken.stp.SaTokenInfo;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.stp.parameter.SaLoginParameter;
+import com.bdsoft.pkusetoken.annotation.PkuseCheckLogin;
+import com.bdsoft.pkusetoken.stp.PkuseTokenInfo;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.stp.parameter.PkuseLoginParameter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pj.util.AjaxJson;
@@ -30,7 +30,7 @@ public class TestJwtController {
 		System.out.println("当前是否登录：" + StpUtil.isLogin());
 		System.out.println("当前登录账号：" + StpUtil.getLoginIdDefaultNull());
 
-		StpUtil.login(id, new SaLoginParameter().setExtra("name", "张三"));			// 在当前会话登录此账号
+		StpUtil.login(id, new PkuseLoginParameter().setExtra("name", "张三"));			// 在当前会话登录此账号
 		System.out.println("登录成功");
 		System.out.println("当前是否登录：" + StpUtil.isLogin());
 		System.out.println("当前登录账号：" + StpUtil.getLoginId());
@@ -45,7 +45,7 @@ public class TestJwtController {
 	@RequestMapping("tokenInfo")
 	public AjaxJson tokenInfo() {
 		System.out.println("======================= 进入方法，打印当前token信息 ========================= ");
-		SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
+		PkuseTokenInfo tokenInfo = StpUtil.getTokenInfo();
 		System.out.println(tokenInfo);
 		return AjaxJson.getSuccessData(tokenInfo);
 	}
@@ -68,7 +68,7 @@ public class TestJwtController {
 	
 	// 测试   浏览器访问： http://localhost:8081/test/test
 	@RequestMapping("test")
-	@SaCheckLogin
+	@PkuseCheckLogin
 	public AjaxJson test() {
 		System.out.println();
 		System.out.println("--------------进入请求--------------");

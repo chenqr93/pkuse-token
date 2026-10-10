@@ -1,11 +1,11 @@
 package com.pj.sso;
 
-import com.bdsoft.satoken.context.SaHolder;
-import com.bdsoft.satoken.sso.SaSsoManager;
-import com.bdsoft.satoken.sso.config.SaSsoClientConfig;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaFoxUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.sso.PkuseSsoManager;
+import com.bdsoft.pkusetoken.sso.config.PkuseSsoClientConfig;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,8 +22,8 @@ public class SsoClientController {
 	// SSO-Client端：首页 
 	@RequestMapping("/")
 	public String index(HttpServletRequest request) {
-		String url = SaFoxUtil.encodeUrl( SaFoxUtil.joinParam(SaHolder.getRequest().getUrl(), request.getQueryString()) );
-		SaSsoClientConfig cfg = SaSsoManager.getClientConfig();
+		String url = PkuseFoxUtil.encodeUrl( PkuseFoxUtil.joinParam(PkuseHolder.getRequest().getUrl(), request.getQueryString()) );
+		PkuseSsoClientConfig cfg = PkuseSsoManager.getClientConfig();
 
 		String str = "<h2>Sa-Token SSO-Client 应用端 (模式一)</h2>" +
 					"<p>当前会话是否登录：" + StpUtil.isLogin() + " (" + StpUtil.getLoginId("") + ")</p>" +
@@ -37,9 +37,9 @@ public class SsoClientController {
 	
 	// 全局异常拦截 
 	@ExceptionHandler
-	public SaResult handlerException(Exception e) {
+	public PkuseResult handlerException(Exception e) {
 		e.printStackTrace(); 
-		return SaResult.error(e.getMessage());
+		return PkuseResult.error(e.getMessage());
 	}
 	
 }

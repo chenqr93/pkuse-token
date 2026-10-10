@@ -1,12 +1,12 @@
 package com.pj.sso;
 
-import com.bdsoft.satoken.context.SaHolder;
-import com.bdsoft.satoken.sso.processor.SaSsoServerProcessor;
-import com.bdsoft.satoken.sso.template.SaSsoServerTemplate;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.stp.parameter.SaLoginParameter;
-import com.bdsoft.satoken.util.SaFoxUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.sso.processor.PkuseSsoServerProcessor;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoServerTemplate;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.stp.parameter.PkuseLoginParameter;
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,12 +28,12 @@ public class SsoServerController {
 	 */
 	@RequestMapping("/sso/*")
 	public Object ssoRequest() {
-		return SaSsoServerProcessor.instance.dister();
+		return PkuseSsoServerProcessor.instance.dister();
 	}
 
 	// 配置SSO相关参数 
 	@Autowired
-	private void configSso(SaSsoServerTemplate ssoServerTemplate) {
+	private void configSso(PkuseSsoServerTemplate ssoServerTemplate) {
 
 		// 配置：未登录时返回的View 
 		ssoServerTemplate.strategy.notLoginView = () -> {
@@ -44,11 +44,11 @@ public class SsoServerController {
 		ssoServerTemplate.strategy.doLoginHandle = (name, pwd) -> {
 			// 此处仅做模拟登录，真实环境应该查询数据库进行登录
 			if("sa".equals(name) && "123456".equals(pwd)) {
-				String deviceId = SaHolder.getRequest().getParam("deviceId", SaFoxUtil.getRandomString(32));
-				StpUtil.login(10001, new SaLoginParameter().setDeviceId(deviceId));
-				return SaResult.ok("登录成功！").setData(StpUtil.getTokenValue());
+				String deviceId = PkuseHolder.getRequest().getParam("deviceId", PkuseFoxUtil.getRandomString(32));
+				StpUtil.login(10001, new PkuseLoginParameter().setDeviceId(deviceId));
+				return PkuseResult.ok("登录成功！").setData(StpUtil.getTokenValue());
 			}
-			return SaResult.error("登录失败！");
+			return PkuseResult.error("登录失败！");
 		};
 
 		// 添加消息处理器：userinfo (获取用户资料) （用于为 client 端开放拉取数据的接口）
@@ -56,7 +56,7 @@ public class SsoServerController {
 			System.out.println("收到消息：" + message);
 
 			// 自定义返回结果（模拟）
-			return SaResult.ok()
+			return PkuseResult.ok()
 					.set("id", message.get("loginId"))
 					.set("name", "LinXiaoYu")
 					.set("sex", "女")

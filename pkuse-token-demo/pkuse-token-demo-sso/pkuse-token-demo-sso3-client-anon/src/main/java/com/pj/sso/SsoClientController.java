@@ -1,12 +1,12 @@
 package com.pj.sso;
 
-import com.bdsoft.satoken.context.SaHolder;
-import com.bdsoft.satoken.sso.message.SaSsoMessage;
-import com.bdsoft.satoken.sso.processor.SaSsoClientProcessor;
-import com.bdsoft.satoken.sso.template.SaSsoClientTemplate;
-import com.bdsoft.satoken.sso.template.SaSsoClientUtil;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.sso.message.PkuseSsoMessage;
+import com.bdsoft.pkusetoken.sso.processor.PkuseSsoClientProcessor;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoClientTemplate;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoClientUtil;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,12 +41,12 @@ public class SsoClientController {
 	 */
 	@RequestMapping("/sso/*")
 	public Object ssoRequest() {
-		return SaSsoClientProcessor.instance.dister();
+		return PkuseSsoClientProcessor.instance.dister();
 	}
 
 	// 配置SSO相关参数
 	@Autowired
-	private void configSso(SaSsoClientTemplate ssoClientTemplate) {
+	private void configSso(PkuseSsoClientTemplate ssoClientTemplate) {
 		// 重写 loginId 与 centerId 转换策略函数，做到本地应用 userId 与认证中心 userId 的互相映射
 
 //		// 将 centerId 转换为 loginId 的函数
@@ -63,7 +63,7 @@ public class SsoClientController {
 	@RequestMapping("/sso/logoutByAlone")
 	public Object logoutByAlone() {
 		StpUtil.logout();
-		return SaSsoClientProcessor.instance._ssoLogoutBack(SaHolder.getRequest(), SaHolder.getResponse());
+		return PkuseSsoClientProcessor.instance._ssoLogoutBack(PkuseHolder.getRequest(), PkuseHolder.getResponse());
 	}
 
 	// 查询我的账号信息：sso-client 前端 -> sso-center 后端 -> sso-server 后端
@@ -78,13 +78,13 @@ public class SsoClientController {
 		// Object centerId = StpUtil.getLoginId();
 
 		// 新写法：获取本地 loginId 对应的认证中心 centerId
-		Object centerId = SaSsoClientUtil.getSsoTemplate().strategy.convertLoginIdToCenterId.run(StpUtil.getLoginId());
+		Object centerId = PkuseSsoClientUtil.getSsoTemplate().strategy.convertLoginIdToCenterId.run(StpUtil.getLoginId());
 
 		// 推送消息
-		SaSsoMessage message = new SaSsoMessage();
+		PkuseSsoMessage message = new PkuseSsoMessage();
 		message.setType("userinfo");
 		message.set("loginId", centerId);
-		SaResult result = SaSsoClientUtil.pushMessageAsSaResult(message);
+		PkuseResult result = PkuseSsoClientUtil.pushMessageAsSaResult(message);
 
 		// 返回给前端
 		return result;

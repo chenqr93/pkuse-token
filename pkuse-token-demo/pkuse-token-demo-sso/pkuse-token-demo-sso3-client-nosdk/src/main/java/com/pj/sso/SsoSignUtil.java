@@ -14,7 +14,7 @@ import java.util.TreeMap;
  */
 public class SsoSignUtil {
 
-	/** 时间戳允许的最大偏差（与官方 SaSignConfig.timestampDisparity 默认值一致：15 分钟） */
+	/** 时间戳允许的最大偏差（与官方 PkuseSignConfig.timestampDisparity 默认值一致：15 分钟） */
 	private static final long TIMESTAMP_DISPARITY = 1000L * 60 * 15;
 
 
@@ -50,7 +50,7 @@ public class SsoSignUtil {
 	}
 
 	/**
-	 * 校验请求中的 timestamp、nonce、sign 是否合法（对齐官方 SaSignTemplate.checkParamMap）
+	 * 校验请求中的 timestamp、nonce、sign 是否合法（对齐官方 PkuseSignTemplate.checkParamMap）
 	 * @param params 包含 sign 的请求参数
 	 * @return 是否合法
 	 */

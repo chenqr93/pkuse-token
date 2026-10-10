@@ -1,8 +1,8 @@
 package com.pj.resdk;
 
-import com.bdsoft.satoken.spring.SpringMVCUtil;
-import com.bdsoft.satoken.stp.StpLogic;
-import com.bdsoft.satoken.stp.parameter.SaLogoutParameter;
+import com.bdsoft.pkusetoken.spring.SpringMVCUtil;
+import com.bdsoft.pkusetoken.stp.StpLogic;
+import com.bdsoft.pkusetoken.stp.parameter.PkuseLogoutParameter;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.Objects;
@@ -50,13 +50,13 @@ public class StpLogicForHttpSession extends StpLogic {
 
     // 当前会话注销
     @Override
-    public void logout(SaLogoutParameter logoutParameter) {
+    public void logout(PkuseLogoutParameter logoutParameter) {
         SpringMVCUtil.getRequest().getSession().removeAttribute("userId");
     }
 
     // 当前账号id注销
     @Override
-    public void _logout(Object loginId, SaLogoutParameter logoutParameter) {
+    public void _logout(Object loginId, PkuseLogoutParameter logoutParameter) {
         System.out.println("--- 注销账号id：" + loginId);
         for (HttpSession session: MyHttpSessionHolder.sessionList) {
             Object userId = session.getAttribute("userId");

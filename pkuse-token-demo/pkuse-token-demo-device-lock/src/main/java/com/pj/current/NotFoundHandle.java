@@ -9,7 +9,7 @@ import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 
 /**
  * 处理 404  
@@ -21,7 +21,7 @@ public class NotFoundHandle implements ErrorController {
 	@RequestMapping("/error")
     public Object error(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		response.setStatus(200);
-        return SaResult.get(404, "not found", null);
+        return PkuseResult.get(404, "not found", null);
     }
 
 }

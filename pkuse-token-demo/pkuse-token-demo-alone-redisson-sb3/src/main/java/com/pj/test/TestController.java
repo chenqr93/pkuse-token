@@ -1,7 +1,7 @@
 package com.pj.test;
 
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,18 +22,18 @@ public class TestController {
 
 	// 测试 Sa-Token 缓存，浏览器访问： http://localhost:8087/test/login
 	@RequestMapping("login")
-	public SaResult login(@RequestParam(defaultValue = "10001") String id) {
+	public PkuseResult login(@RequestParam(defaultValue = "10001") String id) {
 		System.out.println("--------------- 测试Sa-Token缓存");
 		StpUtil.login(id);
-		return SaResult.ok();
+		return PkuseResult.ok();
 	}
 
 	// 测试业务缓存，浏览器访问： http://localhost:8087/test/test
 	@RequestMapping("test")
-	public SaResult test() {
+	public PkuseResult test() {
 		System.out.println("--------------- 测试业务缓存");
 		redissonClient.getBucket("hello").set("Hello World");
-		return SaResult.ok();
+		return PkuseResult.ok();
 	}
 
 }

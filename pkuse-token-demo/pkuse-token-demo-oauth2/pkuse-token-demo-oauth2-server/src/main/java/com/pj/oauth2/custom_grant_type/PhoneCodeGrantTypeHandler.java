@@ -1,12 +1,12 @@
 //package com.pj.oauth2.custom_grant_type;
 //
-//import com.bdsoft.satoken.SaManager;
-//import com.bdsoft.satoken.context.model.SaRequest;
-//import com.bdsoft.satoken.oauth2.SaOAuth2Manager;
-//import com.bdsoft.satoken.oauth2.data.model.AccessTokenModel;
-//import com.bdsoft.satoken.oauth2.data.model.request.RequestAuthModel;
-//import com.bdsoft.satoken.oauth2.exception.SaOAuth2Exception;
-//import com.bdsoft.satoken.oauth2.granttype.handler.SaOAuth2GrantTypeHandlerInterface;
+//import com.bdsoft.pkusetoken.PkuseManager;
+//import com.bdsoft.pkusetoken.context.model.PkuseRequest;
+//import com.bdsoft.pkusetoken.oauth2.PkuseOAuth2Manager;
+//import com.bdsoft.pkusetoken.oauth2.data.model.AccessTokenModel;
+//import com.bdsoft.pkusetoken.oauth2.data.model.request.RequestAuthModel;
+//import com.bdsoft.pkusetoken.oauth2.exception.PkuseOAuth2Exception;
+//import com.bdsoft.pkusetoken.oauth2.granttype.handler.PkuseOAuth2GrantTypeHandlerInterface;
 //import org.springframework.stereotype.Component;
 //
 //import java.util.List;
@@ -18,7 +18,7 @@
 // * @since 2024/8/23
 // */
 //@Component
-//public class PhoneCodeGrantTypeHandler implements SaOAuth2GrantTypeHandlerInterface {
+//public class PhoneCodeGrantTypeHandler implements PkuseOAuth2GrantTypeHandlerInterface {
 //
 //    @Override
 //    public String getHandlerGrantType() {
@@ -26,20 +26,20 @@
 //    }
 //
 //    @Override
-//    public AccessTokenModel getAccessToken(SaRequest req, String clientId, List<String> scopes) {
+//    public AccessTokenModel getAccessToken(PkuseRequest req, String clientId, List<String> scopes) {
 //
 //        // 获取前端提交的参数
 //        String phone = req.getParamNotNull("phone");
 //        String code = req.getParamNotNull("code");
-//        String realCode = SaManager.getSaTokenDao().get("phone_code:" + phone);
+//        String realCode = PkuseManager.getSaTokenDao().get("phone_code:" + phone);
 //
 //        // 1、校验验证码是否正确
 //        if(!code.equals(realCode)) {
-//            throw new SaOAuth2Exception("验证码错误");
+//            throw new PkuseOAuth2Exception("验证码错误");
 //        }
 //
 //        // 2、校验通过，删除验证码
-//        SaManager.getSaTokenDao().delete("phone_code:" + phone);
+//        PkuseManager.getSaTokenDao().delete("phone_code:" + phone);
 //
 //        // 3、登录
 //        long userId = 10001; // 模拟 userId，真实项目应该根据手机号从数据库查询
@@ -51,7 +51,7 @@
 //        ra.scopes = scopes;
 //
 //        // 5、生成 Access-Token
-//        AccessTokenModel at = SaOAuth2Manager.getDataGenerate().generateAccessToken(ra, true, atm -> atm.grantType = "phone_code");
+//        AccessTokenModel at = PkuseOAuth2Manager.getDataGenerate().generateAccessToken(ra, true, atm -> atm.grantType = "phone_code");
 //        return at;
 //    }
 //}

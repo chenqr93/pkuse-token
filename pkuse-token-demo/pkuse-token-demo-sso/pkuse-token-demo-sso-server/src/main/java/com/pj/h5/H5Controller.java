@@ -1,10 +1,10 @@
 package com.pj.h5;
 
-import com.bdsoft.satoken.sso.template.SaSsoServerUtil;
-import com.bdsoft.satoken.sso.util.SaSsoConsts;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaFoxUtil;
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.sso.template.PkuseSsoServerUtil;
+import com.bdsoft.pkusetoken.sso.util.PkuseSsoConsts;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseFoxUtil;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,29 +21,29 @@ public class H5Controller {
 	 * 返回当前是否已经登录
 	 */
 	@RequestMapping("/sso/isLogin")
-	public SaResult isLogin() {
-		return SaResult.data(StpUtil.isLogin());
+	public PkuseResult isLogin() {
+		return PkuseResult.data(StpUtil.isLogin());
 	}
 
 	/**
 	 * 获取 redirectUrl 
 	 */
 	@RequestMapping("/sso/getRedirectUrl")
-	public SaResult getRedirectUrl(String client, String redirect, String mode) {
+	public PkuseResult getRedirectUrl(String client, String redirect, String mode) {
 		// 未登录情况下，返回 code=401 
 		if(StpUtil.isLogin() == false) {
-			return SaResult.code(401);
+			return PkuseResult.code(401);
 		}
 		// 已登录情况下，构建 redirectUrl
-		redirect = SaFoxUtil.decoderUrl(redirect);
-		if(SaSsoConsts.MODE_SIMPLE.equals(mode)) {
+		redirect = PkuseFoxUtil.decoderUrl(redirect);
+		if(PkuseSsoConsts.MODE_SIMPLE.equals(mode)) {
 			// 模式一 
-			SaSsoServerUtil.checkRedirectUrl(client, redirect);
-			return SaResult.data(redirect);
+			PkuseSsoServerUtil.checkRedirectUrl(client, redirect);
+			return PkuseResult.data(redirect);
 		} else {
 			// 模式二或模式三
-			String redirectUrl = SaSsoServerUtil.buildRedirectUrl(client, redirect, StpUtil.getLoginId(), StpUtil.getTokenValue());
-			return SaResult.data(redirectUrl);
+			String redirectUrl = PkuseSsoServerUtil.buildRedirectUrl(client, redirect, StpUtil.getLoginId(), StpUtil.getTokenValue());
+			return PkuseResult.data(redirectUrl);
 		}
 	}
 

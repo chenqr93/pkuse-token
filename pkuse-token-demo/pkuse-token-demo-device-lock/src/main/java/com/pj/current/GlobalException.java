@@ -1,6 +1,6 @@
 package com.pj.current;
 
-import com.bdsoft.satoken.util.SaResult;
+import com.bdsoft.pkusetoken.util.PkuseResult;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -14,9 +14,9 @@ import jakarta.servlet.http.HttpServletResponse;
 public class GlobalException {
 
 	@ExceptionHandler
-	public SaResult handlerException(Exception e, HttpServletRequest request, HttpServletResponse response) {
+	public PkuseResult handlerException(Exception e, HttpServletRequest request, HttpServletResponse response) {
 		e.printStackTrace();
-		return SaResult.error(e.getMessage());
+		return PkuseResult.error(e.getMessage());
 	}
 	
 }

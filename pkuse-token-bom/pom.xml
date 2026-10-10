@@ -47,7 +47,7 @@
             </dependency>
             <dependency>
                 <groupId>com.bdsoft</groupId>
-                <artifactId>pkuse-token-spring-boot-webmvc-reactor-v2v3v4-common</artifactId>
+                <artifactId>pkuse-token-spring-boot-webmvc-reactor-v3v4-common</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -58,6 +58,11 @@
             <dependency>
                 <groupId>com.bdsoft</groupId>
                 <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot4-starter</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- endregion-->
@@ -71,6 +76,11 @@
             <dependency>
                 <groupId>com.bdsoft</groupId>
                 <artifactId>pkuse-token-jackson</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-jackson3</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

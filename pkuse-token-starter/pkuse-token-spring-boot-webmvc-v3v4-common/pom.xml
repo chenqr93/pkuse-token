@@ -37,10 +37,10 @@
 			<artifactId>pkuse-token-jakarta-servlet</artifactId>
 		</dependency>
 		
-		<!-- sa-token-spring-boot-webmvc-reactor-v2v3v4-common -->
+		<!-- sa-token-spring-boot-webmvc-reactor-v3v4-common -->
 		<dependency>
 			<groupId>com.bdsoft</groupId>
-			<artifactId>pkuse-token-spring-boot-webmvc-reactor-v2v3v4-common</artifactId>
+			<artifactId>pkuse-token-spring-boot-webmvc-reactor-v3v4-common</artifactId>
 		</dependency>
 		
 	</dependencies>

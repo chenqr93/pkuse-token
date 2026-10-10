@@ -1,7 +1,7 @@
 package com.pj.sso;
 
-import com.bdsoft.satoken.context.SaHolder;
-import com.bdsoft.satoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.context.PkuseHolder;
+import com.bdsoft.pkusetoken.stp.StpUtil;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +16,7 @@ public class HomeController {
     public Object index() {
         // 如果未登录，则先去登录
         if(!StpUtil.isLogin()) {
-            return SaHolder.getResponse().redirect("/sso/auth");
+            return PkuseHolder.getResponse().redirect("/sso/auth");
         }
 
         // 拼接各个子系统的地址，格式形如：/sso/auth?client=xxx&redirect=${子系统首页}/sso/login?back=${子系统首页}

@@ -1,19 +1,19 @@
 package com.pj.test;
 
-import com.bdsoft.satoken.servlet.util.SaTokenContextJakartaServletUtil;
-import com.bdsoft.satoken.spring.SpringMVCUtil;
+import com.bdsoft.pkusetoken.servlet.util.PkuseTokenContextJakartaServletUtil;
+import com.bdsoft.pkusetoken.spring.SpringMVCUtil;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import com.bdsoft.satoken.SaManager;
-import com.bdsoft.satoken.dao.SaTokenDao;
-import com.bdsoft.satoken.exception.ApiDisabledException;
-import com.bdsoft.satoken.jwt.SaJwtUtil;
-import com.bdsoft.satoken.jwt.StpLogicJwtForStateless;
-import com.bdsoft.satoken.stp.SaLoginConfig;
-import com.bdsoft.satoken.stp.StpUtil;
-import com.bdsoft.satoken.util.SaTokenConsts;
+import com.bdsoft.pkusetoken.PkuseManager;
+import com.bdsoft.pkusetoken.dao.PkuseTokenDao;
+import com.bdsoft.pkusetoken.exception.ApiDisabledException;
+import com.bdsoft.pkusetoken.jwt.PkuseJwtUtil;
+import com.bdsoft.pkusetoken.jwt.StpLogicJwtForStateless;
+import com.bdsoft.pkusetoken.stp.parameter.PkuseLoginParameter;
+import com.bdsoft.pkusetoken.stp.StpUtil;
+import com.bdsoft.pkusetoken.util.PkuseTokenConsts;
 import cn.hutool.json.JSONObject;
 import cn.hutool.jwt.JWT;
 
@@ -28,7 +28,7 @@ public class JwtForStatelessTest {
 
 	// 持久化Bean 
 	@Autowired(required = false)
-	SaTokenDao dao = SaManager.getSaTokenDao();
+	PkuseTokenDao dao = PkuseManager.getSaTokenDao();
 	
 	// 开始 
 	@BeforeAll
@@ -45,12 +45,12 @@ public class JwtForStatelessTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		SaTokenContextJakartaServletUtil.setContext(SpringMVCUtil.getRequest(), SpringMVCUtil.getResponse());
+		PkuseTokenContextJakartaServletUtil.setContext(SpringMVCUtil.getRequest(), SpringMVCUtil.getResponse());
 	}
 
 	@AfterEach
 	public void afterEach() {
-		SaTokenContextJakartaServletUtil.clearContext();
+		PkuseTokenContextJakartaServletUtil.clearContext();
 	}
 
     // 测试：登录 
@@ -64,18 +64,18 @@ public class JwtForStatelessTest {
     	Assertions.assertTrue(StpUtil.isLogin());	
     	Assertions.assertNotNull(token);	// token不为null
     	Assertions.assertEquals(StpUtil.getLoginIdAsLong(), 10001);	// loginId=10001 
-    	Assertions.assertEquals(StpUtil.getLoginDevice(), SaTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);	// 登录设备类型
+    	Assertions.assertEquals(StpUtil.getLoginDevice(), PkuseTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);	// 登录设备类型
 
     	// token 验证 
     	JWT jwt = JWT.of(token);
     	JSONObject payloads = jwt.getPayloads();
-    	Assertions.assertEquals(payloads.getStr(SaJwtUtil.LOGIN_ID), "10001"); // 账号 
-    	Assertions.assertEquals(payloads.getStr(SaJwtUtil.DEVICE_TYPE), SaTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);  // 登录设备类型
-    	Assertions.assertEquals(payloads.getStr(SaJwtUtil.LOGIN_TYPE), StpUtil.TYPE);  // 账号类型 
+    	Assertions.assertEquals(payloads.getStr(PkuseJwtUtil.LOGIN_ID), "10001"); // 账号 
+    	Assertions.assertEquals(payloads.getStr(PkuseJwtUtil.DEVICE_TYPE), PkuseTokenConsts.DEFAULT_LOGIN_DEVICE_TYPE);  // 登录设备类型
+    	Assertions.assertEquals(payloads.getStr(PkuseJwtUtil.LOGIN_TYPE), StpUtil.TYPE);  // 账号类型 
     	
     	// 时间 
-    	Assertions.assertTrue(StpUtil.getTokenTimeout() <= SaManager.getConfig().getTimeout());
-    	Assertions.assertTrue(StpUtil.getTokenTimeout() > SaManager.getConfig().getTimeout() - 10000);
+    	Assertions.assertTrue(StpUtil.getTokenTimeout() <= PkuseManager.getConfig().getTimeout());
+    	Assertions.assertTrue(StpUtil.getTokenTimeout() > PkuseManager.getConfig().getTimeout() - 10000);
     	
     	try {
 			// 尝试获取Session会抛出异常 
@@ -178,7 +178,7 @@ public class JwtForStatelessTest {
     @Test
     public void getExtra() {
     	// 登录
-    	StpUtil.login(10001, SaLoginConfig.setExtra("name", "zhangsan"));
+    	StpUtil.login(10001, new PkuseLoginParameter().setExtra("name", "zhangsan"));
     	String tokenValue = StpUtil.getTokenValue();
     	
     	// 可以取到

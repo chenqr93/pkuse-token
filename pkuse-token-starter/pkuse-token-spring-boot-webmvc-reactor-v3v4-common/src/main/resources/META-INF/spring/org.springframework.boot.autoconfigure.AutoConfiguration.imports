@@ -1,0 +1,8 @@
+com.bdsoft.pkusetoken.spring.PkuseBeanRegister
+com.bdsoft.pkusetoken.spring.PkuseBeanInject
+com.bdsoft.pkusetoken.spring.sso.PkuseSsoBeanRegister
+com.bdsoft.pkusetoken.spring.sso.PkuseSsoBeanInject
+com.bdsoft.pkusetoken.spring.oauth2.PkuseOAuth2BeanRegister
+com.bdsoft.pkusetoken.spring.oauth2.PkuseOAuth2BeanInject
+com.bdsoft.pkusetoken.spring.sign.PkuseSignBeanRegister
+com.bdsoft.pkusetoken.spring.sign.PkuseSignBeanInject
