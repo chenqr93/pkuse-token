@@ -17,7 +17,6 @@
 		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-nosdk</module>
 		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-resdk</module>
 		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client-anon</module>
-		<module>pkuse-token-demo-sso/pkuse-token-demo-sso3-client--sb4</module>
 		<!-- 认证相关 -->
 		<module>pkuse-token-demo-oauth2/pkuse-token-demo-oauth2-server</module>
 		<module>pkuse-token-demo-oauth2/pkuse-token-demo-oauth2-client</module>
@@ -27,7 +26,6 @@
 		<!-- SB3 基线 -->
 		<module>pkuse-token-demo-springboot3-redis</module>
 		<module>pkuse-token-demo-alone-redisson-sb3</module>
-		<module>pkuse-token-demo-alone-redisson-sb4</module>
     </modules>
 
 </project>

@@ -18,7 +18,6 @@
 
     <modules>
         <module>pkuse-token-spring-boot3-dependencies</module>
-        <module>pkuse-token-spring-boot4-dependencies</module>
     </modules>
 
 </project>
