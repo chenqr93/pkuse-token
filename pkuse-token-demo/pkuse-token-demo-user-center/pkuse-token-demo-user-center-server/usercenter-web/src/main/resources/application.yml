@@ -1,0 +1,104 @@
+# ===================================================================
+#  Pkuse-Token 用户中心示例 - 后端公共配置（各环境通用）
+#  技术栈：SpringBoot3 + KingbaseES + MyBatis-Plus + Pkuse-Token(SSO-Server)
+#
+#  环境差异（端口 / 数据源 / Redis / SQL 日志 / SSO 地址与签名 / 登录安全参数）
+#  见 application-{env}.yml：dev（开发，默认）/ test（测试）/ uat（预发布）/ prod（生产）
+#  激活环境由打包时的 Maven profile 决定（mvn package -P dev|test|uat|prod），
+#  运行时可被 --spring.profiles.active=xxx 覆盖。
+# ===================================================================
+spring:
+  application:
+    name: pkuse-token-demo-user-center-server
+
+  # 激活的环境配置：application-{profile}.yml（@profiles.active@ 由 Maven 资源过滤替换）
+  profiles:
+    active: @profiles.active@
+
+  # ------------------- 数据源连接池：Druid -------------------
+  # 数据源连接信息（url / username / password）在各环境配置文件 application-{env}.yml 中定义；
+  # 此处为各环境通用的连接池参数（替代默认 Hikari）。
+  # 注意（部门标准强制）：各环境 url 使用 jdbc:p6spy: 前缀、驱动为 com.p6spy.engine.spy.P6SpyDriver，
+  # 由 p6spy 代理做 SQL 监控（真实驱动见 spy.properties），Druid 参数不受影响。
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      # 初始化 / 最小空闲 / 最大连接数
+      initial-size: 2
+      min-idle: 2
+      max-active: 10
+      # 获取连接超时（毫秒）
+      max-wait: 30000
+      # 连接有效性检测（KingbaseES 兼容 PostgreSQL 方言，SELECT 1 即可）
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      # 空闲连接回收：空闲超过 5 分钟检测一次，超过 30 分钟的空闲连接回收
+      time-between-eviction-runs-millis: 300000
+      min-evictable-idle-time-millis: 1800000
+
+# ------------------- MyBatis-Plus -------------------
+mybatis-plus:
+  # 自定义 SQL 的 XML 与 Mapper 接口同模块存放（usercenter-service/src/main/resources/mapper/）。
+  # classpath*：同时扫描本 jar 与依赖 jar 内的 XML；
+  # 多数据库方言（kingbase/dm/mysql）按子目录或 databaseId 属性区分，由 DatabaseIdProvider 自动路由
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    # 下划线转驼峰
+    map-underscore-to-camel-case: true
+    # SQL 日志不用 log-impl：统一由 p6spy 接管（数据源 jdbc:p6spy: 前缀 + spy.properties → Log4j2 的 p6spy logger）
+  global-config:
+    banner: false
+    db-config:
+      # 主键策略：雪花 ID（不依赖数据库序列，跨库通用）
+      id-type: assign_uuid
+
+# ------------------- Pkuse-Token 认证配置 -------------------
+sa-token:
+  # 打印操作日志
+  is-log: true
+  # token 名称（同时也是 cookie 名称、请求头名称）
+  token-name: satoken
+  # token 有效期（秒），默认 30 天
+  timeout: 2592000
+  # token 最低活跃频率（秒），-1 代表不限制
+  active-timeout: -1
+  # 是否允许同一账号多地同时登录
+  is-concurrent: true
+  # 多人登录同一账号时，是否共用一个 token
+  is-share: false
+  # token 风格：uuid / simple-uuid / random-32 / random-64 / random-128 / tik
+  token-style: uuid
+
+  # ------------------- SSO-Server 配置（用户中心即认证中心） -------------------
+  sso-server:
+    # Ticket 有效期（秒），默认 5 分钟
+    ticket-timeout: 300
+    # 是否打开单点注销
+    is-slo: true
+    # 是否允许匿名 Client 接入（本示例所有应用统一在「应用管理」中维护，故关闭）
+    allow-anon-client: false
+    # 主页路由（home-route）与签名校验开关（is-check-sign）在各环境配置文件中定义：
+    #   home-route 指向各环境的工作台地址；is-check-sign 生产环境必须为 true
+    # 说明：clients 不写死在配置文件，而是维护在数据库表 uc_client 中，
+    #      应用启动时由 SsoClientRegistry 自动同步到 SSO 全局客户端配置。
+
+# ------------------- 滑块验证码（tianai-captcha）-------------------
+captcha:
+  # 验证码在服务端的有效期（毫秒），默认 120000（2 分钟）
+  expire:
+    default: 120000
+
+# ------------------- 运行监控：JavaMelody（部门标准强制，要求 >= 2.5.0，当前 2.6.0）-------------------
+# 依赖：javamelody-spring-boot-starter（web 模块）；启动后访问 http://localhost:{port}/monitoring
+# 可查看 HTTP 请求 / SQL / 内存 / 线程 / 会话等运行指标。
+javamelody:
+  # 监控开关（生产环境保持开启；建议通过网关 / 防火墙限制 /monitoring 的访问来源）
+  enabled: true
+
+# ------------------- 用户中心自定义配置 -------------------
+# user-center.*（前端地址 / 登录安全部署参数）在各环境配置文件中定义。
+# 注意：失败计数窗口、锁定阈值、滑块验证码策略、设备验证开关、系统默认密码、
+#       密码复杂度、日志分区频率等运行期规则已迁移到「规则配置」模块
+#       （数据库表 uc_config，仅系统管理员可在线维护，修改后即时生效）

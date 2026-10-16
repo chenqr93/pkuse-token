@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>usercenter-service</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>usercenter-service</name>
+    <description>用户中心 - 业务层：IService 接口 + ServiceImpl + Mapper（自定义 XML 与 Mapper 同模块）+ 日志/安全/验证码基础设施</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-server</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- 内部模块 -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-common</artifactId>
+        </dependency>
+
+        <!-- MyBatis-Plus（starter 含 spring-jdbc / 分页；jsqlparser 供数据变更捕获拦截器解析 SQL） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+        </dependency>
+
+        <!-- AOP：操作日志切面（@OperLog + OperLogAspect）；排除默认 Logback，日志统一走 Log4j2（web 模块引入） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Servlet API（登录/日志记录请求信息；由 Web 容器在运行期提供） -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Pkuse-Token 认证框架 + SSO（登录会话 / SSO 客户端配置同步） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+        </dependency>
+
+        <!-- 滑块验证码（tianai-captcha core 手动装配） -->
+        <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha</artifactId>
+        </dependency>
+
+        <!-- 国密（Sm2KeyManager 密钥管理） -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

@@ -1,0 +1,22 @@
+# ===================================================================
+#  client4：NoSdk 模式对接（不依赖 Pkuse-Token 客户端 SDK，手动实现协议）
+#    跨域    ：部署在 127.0.0.1（与认证中心 localhost 不同域）
+#    独立会话：本地会话存于内存（无 Redis 依赖）
+#    协议    ：手动拼装 /sso/auth 授权地址，调用认证中心 /sso/pushS
+#              （checkTicket / signout / userinfo），并自行实现 MD5 签名
+# ===================================================================
+server:
+  port: 9004
+
+spring:
+  application:
+    name: pkuse-token-demo-user-center-client4
+
+# NoSdk 客户端自定义配置
+sso-client:
+  # 应用标识（需与用户中心「应用管理」中的登记一致）
+  client-id: sso-client4
+  # SSO-Server 端（认证中心）主机地址
+  server-url: http://localhost:8091
+  # API 接口调用秘钥（与认证中心登记一致）
+  secret-key: SSO-C4-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor

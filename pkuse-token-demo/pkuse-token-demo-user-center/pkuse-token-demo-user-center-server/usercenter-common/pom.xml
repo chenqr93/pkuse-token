@@ -1,0 +1,53 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>usercenter-common</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>usercenter-common</name>
+    <description>用户中心 - 通用层（零内部依赖叶子）：自定义注解 / 业务异常 / 工具类 / 平台配置定义</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-server</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- Spring 基础（@Component / @ConfigurationProperties / DigestUtils） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+
+        <!-- Servlet API（RequestInfoUtil 解析 IP / UA；由 Web 容器在运行期提供） -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- MyBatis-Plus 注解（CommonAuditPO 审计字段的 @TableLogic / @TableField，仅注解不含持久层实现） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+
+        <!-- 国密算法（SmCryptoUtil：SM2 密码传输加密 / SM3 密码摘要） -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

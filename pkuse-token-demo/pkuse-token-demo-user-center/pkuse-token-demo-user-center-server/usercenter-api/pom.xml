@@ -1,0 +1,57 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>usercenter-api</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>usercenter-api</name>
+    <description>用户中心 - 对外接口层：Controller（HTTP 入口；入参 DTO、出参 VO）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-server</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- 业务层（IService 接口；传递引入 model / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-service</artifactId>
+        </dependency>
+
+        <!-- Web（@RestController / @RequestBody）；排除默认 Logback，日志统一走 Log4j2（web 模块引入） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- Pkuse-Token（PkuseResult / StpUtil / SSO 协议处理器，Controller 直接使用） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+        </dependency>
+
+        <!-- 滑块验证码（AuthController 返回 ImageCaptchaVO） -->
+        <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

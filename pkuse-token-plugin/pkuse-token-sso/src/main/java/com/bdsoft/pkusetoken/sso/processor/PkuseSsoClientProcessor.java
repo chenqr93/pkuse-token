@@ -262,7 +262,9 @@ public class PkuseSsoClientProcessor {
 		PkuseRequest req = PkuseHolder.getRequest();
 		PkuseResponse res = PkuseHolder.getResponse();
 		StpLogic stpLogic = ssoClientTemplate.getStpLogicOrGlobal();
-		boolean singleDeviceIdLogout = req.isParam(ssoClientTemplate.paramName.singleDeviceIdLogout, "true");
+		// 是否仅注销当前设备：默认 true（只下线当前设备/浏览器的会话，不影响该账号在其它设备上的登录），
+		// 需要全端下线时显式传入 singleDeviceIdLogout=false
+		boolean singleDeviceIdLogout = ! "false".equals(req.getParam(ssoClientTemplate.paramName.singleDeviceIdLogout));
 
 		// 如果未登录，则无需注销
 		if( ! stpLogic.isLogin()) {

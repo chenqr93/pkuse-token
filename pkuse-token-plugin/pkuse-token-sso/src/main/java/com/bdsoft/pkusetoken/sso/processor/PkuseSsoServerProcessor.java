@@ -182,7 +182,9 @@ public class PkuseSsoServerProcessor {
 		PkuseResponse res = PkuseHolder.getResponse();
 		StpLogic stpLogic = ssoServerTemplate.getStpLogicOrGlobal();
 		Object loginId = stpLogic.getLoginIdDefaultNull();
-		boolean singleDeviceIdLogout = req.isParam(ssoServerTemplate.paramName.singleDeviceIdLogout, "true");
+		// 是否仅注销当前设备：默认 true（只下线当前设备/浏览器的会话，不影响该账号在其它设备上的登录），
+		// 需要全端下线时显式传入 singleDeviceIdLogout=false
+		boolean singleDeviceIdLogout = ! "false".equals(req.getParam(ssoServerTemplate.paramName.singleDeviceIdLogout));
 
 		// 单点注销
 		if(PkuseFoxUtil.isNotEmpty(loginId)) {

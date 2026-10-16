@@ -1,0 +1,84 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>com.bdsoft</groupId>
+    <artifactId>pkuse-token-demo-user-center-client2</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>pkuse-token-demo-user-center-client2</name>
+    <description>SSO 客户端示例2：模式二对接（跨域 + 同 Redis，ticket 直连 Redis 校验）</description>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.5.16</version>
+        <relativePath/>
+    </parent>
+
+    <properties>
+        <java.version>17</java.version>
+        <pkuse-token.version>1.46.0</pkuse-token.version>
+        <netty.version>4.1.135.Final</netty.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- 统一 Netty 各模块版本（pkuse-token-redisson 依赖中排除了 netty-codec，需应用自行补齐） -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+            <version>${pkuse-token.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+            <version>${pkuse-token.version}</version>
+        </dependency>
+
+        <!--
+             模式二：与认证中心共享同一个 Redis（sa-token.alone-redisson 配置），
+             由 alone-redisson 提供 PkuseTokenDao，无需再引入 pkuse-token-redisson-spring-boot-starter。
+         -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-alone-redisson</artifactId>
+            <version>${pkuse-token.version}</version>
+        </dependency>
+
+        <!-- Redisson 被排除的 netty-codec（Redisson 客户端运行必需） -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

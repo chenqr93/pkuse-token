@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Log4j2 日志配置（部门 Java Web 开发标准强制项，要求 Log4j2 >= 2.22.1；
+  版本由 spring-boot-starter-parent 3.5.16 管理为 2.24.3，满足要求）
+
+  - 文件名带 -spring 后缀：由 Spring Boot 提前加载，支持 <SpringProfile> 按环境区分；
+  - 双通道输出：控制台（开发调试 / 部署后台启动时由脚本重定向 stdout）+ 滚动文件 logs/app.log
+    （按天滚动 + 单文件 100MB 切分，最多保留 30 个，历史压缩为 .gz）；
+  - p6spy 的 SQL 监控日志（logger 名 p6spy）同样走本配置输出。
+-->
+<configuration monitorInterval="30">
+
+    <Properties>
+        <!-- 格式：时间 级别 [线程] 类名 - 消息 -->
+        <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%t] %logger{50} - %msg%n</Property>
+        <!-- 日志目录（相对启动目录；assembly 部署结构中即为应用根目录下的 logs/） -->
+        <Property name="LOG_HOME">logs</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+        </Console>
+
+        <RollingFile name="RollingFile"
+                     fileName="${LOG_HOME}/app.log"
+                     filePattern="${LOG_HOME}/app-%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="100MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="30"/>
+        </RollingFile>
+    </Appenders>
+
+    <Loggers>
+        <!-- 本项目业务日志 -->
+        <Logger name="com.bdsoft" level="INFO"/>
+
+        <!-- p6spy SQL 监控（spy.properties 的 Slf4JLogger 输出名）：INFO 打印全部 SQL 与慢 SQL 告警 -->
+        <Logger name="p6spy" level="INFO"/>
+
+        <!-- 第三方框架降噪 -->
+        <Logger name="org.springframework" level="INFO"/>
+        <Logger name="com.baomidou" level="INFO"/>
+        <Logger name="com.alibaba.druid" level="INFO"/>
+
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Root>
+    </Loggers>
+
+</configuration>

@@ -1,0 +1,54 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>usercenter-model</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>usercenter-model</name>
+    <description>用户中心 - 数据模型层：entity(PO，对表) / bo(业务对象) / dto(传输对象) / vo(视图对象)</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-server</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- 通用层（平台配置定义：SystemConfig / SystemConfigItems，被 ConfigItemVO / PasswordRuleVO 引用） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-common</artifactId>
+        </dependency>
+
+        <!-- MyBatis-Plus 注解（@TableName / @TableId / @TableField；不含持久层实现） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-annotation</artifactId>
+            <version>${mybatis-plus.version}</version>
+        </dependency>
+
+        <!-- Jackson（雪花 ID 序列化为字符串等） -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Spring 上下文（查询参数 @DateTimeFormat） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- 滑块验证码（LoginDTO.captchaTrack：ImageCaptchaTrack） -->
+        <dependency>
+            <groupId>cloud.tianai.captcha</groupId>
+            <artifactId>tianai-captcha</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  部署包装配描述：bin（启停脚本）/ conf（外置配置）/ lib（依赖），应用瘦包位于根目录
+
+  产物（usercenter-web/target/）：
+    usercenter-web-${project.version}-assembly/          目录形态，可直接运行（Linux 上传解压即部署）
+    usercenter-web-${project.version}-assembly.zip       压缩形态
+    usercenter-web-${project.version}-assembly.tar.gz    压缩形态（Linux 部署推荐，保留执行权限）
+
+  conf 中携带的环境配置由打包时的 Maven profile 决定（mvn package -P dev|test|uat|prod）：
+    application.yml（公共）+ application-${profiles.active}.yml（激活环境）
+-->
+<assembly xmlns="http://maven.apache.org/ASSEMBLY/2.1.1"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/ASSEMBLY/2.1.1 http://maven.apache.org/xsd/assembly-2.1.1.xsd">
+
+    <id>assembly</id>
+
+    <formats>
+        <format>dir</format>
+        <format>zip</format>
+        <format>tar.gz</format>
+    </formats>
+
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <!-- 解压后的一级目录名（bin/conf/lib 的父目录） -->
+    <baseDirectory>pkuse-token-demo-user-center-server-${project.version}</baseDirectory>
+
+    <!-- bin：启停脚本（bat 用 CRLF；sh 用 LF 并赋可执行权限，tar.gz 保留） -->
+    <fileSets>
+        <fileSet>
+            <directory>src/main/assembly/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.bat</include>
+            </includes>
+            <lineEnding>windows</lineEnding>
+        </fileSet>
+        <fileSet>
+            <directory>src/main/assembly/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <!-- conf：外置配置（公共 + 打包环境对应的配置文件；优先于 jar 内配置生效）。
+             取 target/classes（Maven 已完成 @profiles.active@ 资源过滤的产物），而非 src/main/resources 源文件 -->
+        <fileSet>
+            <directory>${project.build.directory}/classes</directory>
+            <outputDirectory>conf</outputDirectory>
+            <includes>
+                <include>application.yml</include>
+                <include>application-${profiles.active}.yml</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+    <!-- lib：全部运行期依赖（排除本应用自身瘦包） -->
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <useProjectArtifact>false</useProjectArtifact>
+            <fileMode>0644</fileMode>
+        </dependencySet>
+    </dependencySets>
+
+    <!-- 应用瘦包：位于部署包根目录（与 bin/conf/lib 平级） -->
+    <files>
+        <file>
+            <source>${project.build.directory}/${project.build.finalName}.jar</source>
+            <outputDirectory>/</outputDirectory>
+            <fileMode>0644</fileMode>
+        </file>
+    </files>
+
+</assembly>

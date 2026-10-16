@@ -1,0 +1,147 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>usercenter-web</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>usercenter-web</name>
+    <description>用户中心 - 启动与装配：启动类 / Spring 配置 / 全局异常处理 / application.yml / db 脚本（可执行 jar）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-server</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- 内部模块（api 传递引入 service / model / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>usercenter-service</artifactId>
+        </dependency>
+
+        <!-- Web + 参数校验（排除默认 Logback，日志统一走 Log4j2，见下方 starter-log4j2） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- 日志（部门标准强制）：Log4j2，版本由 spring-boot-starter-parent 管理（3.5.16 → 2.24.3，满足 >= 2.22.1）；
+             配置文件 log4j2-spring.xml -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-log4j2</artifactId>
+        </dependency>
+
+        <!-- 运行监控（部门标准强制）：JavaMelody，监控页 /monitoring（javamelody.* 配置见 application.yml） -->
+        <dependency>
+            <groupId>net.bull.javamelody</groupId>
+            <artifactId>javamelody-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Pkuse-Token 认证框架（SSO-Server / 会话存储 Redisson） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- 人大金仓 KingbaseES JDBC 驱动 -->
+        <dependency>
+            <groupId>cn.com.kingbase</groupId>
+            <artifactId>kingbase8</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- 数据库连接池：Druid（替代默认 Hikari；连接池参数见 application.yml 的 spring.datasource.druid.*） -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
+        </dependency>
+
+        <!-- SQL 监控（部门标准强制）：p6spy 代理 JDBC 驱动，打印实际执行 SQL / 慢 SQL 检测；
+             数据源 url 使用 jdbc:p6spy:kingbase8:// 前缀、驱动 com.p6spy.engine.spy.P6SpyDriver（见 application-{env}.yml），
+             真实驱动由 spy.properties 的 driverlist 提供；SQL 日志经 Slf4JLogger 输出到 Log4j2 -->
+        <dependency>
+            <groupId>p6spy</groupId>
+            <artifactId>p6spy</artifactId>
+        </dependency>
+
+        <!-- Redisson 被排除的 netty-codec（Redisson 客户端运行必需） -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <!-- exec：fat 包命名为 *-exec.jar 保留单文件运行能力；
+                         主产物为瘦包（仅本应用 class 与资源），供 assembly 装配进 jar/ 目录，
+                         与 lib/ 依赖、conf/ 外置配置配合，通过 -cp 方式启动 -->
+                    <classifier>exec</classifier>
+                </configuration>
+            </plugin>
+            <!-- assembly：把瘦包 / 依赖 / 外置配置 / 启停脚本装配为 bin/lib/conf/jar 部署结构 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
