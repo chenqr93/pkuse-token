@@ -185,7 +185,7 @@ const currentUser = ref(getStoredUser() || {})
 
 const isAdmin = computed(() => isAdminUser() || currentUser.value.role === 'admin')
 const displayName = computed(() => currentUser.value.nickname || currentUser.value.username || '用户')
-const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:8091`)
+const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:9000`)
 const registeredClients = computed(() => overview.value.registeredClients || [])
 
 onMounted(loadData)

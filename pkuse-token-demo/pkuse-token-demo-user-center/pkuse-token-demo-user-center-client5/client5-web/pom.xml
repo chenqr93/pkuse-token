@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client5-web</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client5-web</name>
+    <description>客户端5 - 启动与装配：启动类 / Spring 配置（CORS、HttpTemplate）/ application.yml（可执行 jar）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client5</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 内部模块（api 传递引入 service / model / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client5-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client5-service</artifactId>
+        </dependency>
+
+        <!-- 模式三：本应用使用自己的 Redis（spring.data.redis 配置，见 application.yml），故不引入 alone-redisson -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+        </dependency>
+
+        <!-- Redisson 被排除的 netty-codec（Redisson 客户端运行必需） -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+        </dependency>
+        <!-- 引用接口快速开发平台 -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>magic-api-spring-boot-starter</artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+        </dependency>
+        <!-- 引用接口快速开发平台 -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>magic-api-plugin-task</artifactId>
+            <version>2.2.0-SNAPSHOT</version>
+        </dependency>
+
+        <!-- 数据库：KingbaseES 驱动（magic-api 资源库 + 开放调用方表 s_open_client） -->
+        <dependency>
+            <groupId>cn.com.kingbase</groupId>
+            <artifactId>kingbase8</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- 数据库连接池：Druid（连接池参数见 application.yml 的 spring.datasource.druid.*） -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-3-starter</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client2-web</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client2-web</name>
+    <description>客户端2 - 启动与装配：启动类 / Spring 配置（CORS、HttpTemplate）/ application.yml（可执行 jar）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client2</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 内部模块（api 传递引入 service / model / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client2-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client2-service</artifactId>
+        </dependency>
+
+        <!--
+             模式二：与认证中心共享同一个 Redis（sa-token.alone-redisson 配置，见 application.yml），
+             由 alone-redisson 提供 PkuseTokenDao，无需再引入 pkuse-token-redisson-spring-boot-starter。
+        -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-alone-redisson</artifactId>
+        </dependency>
+
+        <!-- Redisson 被排除的 netty-codec（Redisson 客户端运行必需） -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

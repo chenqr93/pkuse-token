@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client4-model</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client4-model</name>
+    <description>客户端4 - 数据模型层：entity(PO) / bo / dto / vo（本示例暂无内容，保留分层脚手架）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client4</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 通用层（维持依赖链 web → api → service → model → common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client4-common</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

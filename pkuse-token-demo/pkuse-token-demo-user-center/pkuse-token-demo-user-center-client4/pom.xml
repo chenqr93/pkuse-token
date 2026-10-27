@@ -2,12 +2,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.bdsoft</groupId>
     <artifactId>pkuse-token-demo-user-center-client4</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
     <name>pkuse-token-demo-user-center-client4</name>
-    <description>SSO 客户端示例4：NoSdk 模式对接（不依赖 Pkuse-Token 客户端 SDK，手动实现协议与签名）</description>
+    <description>SSO 客户端示例4（分层多模块）：common / model / service / api / web —— NoSdk 模式对接（不依赖 Pkuse-Token 客户端 SDK，手动实现协议与签名）</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -16,27 +17,84 @@
         <relativePath/>
     </parent>
 
+    <!--
+        分层约定（依赖单向：web → api → service → model → common，无环），与用户中心 server 同风格：
+          client4-common   通用层（零内部依赖叶子）：NoSdk 客户端配置定义（SsoClientProperties）
+          client4-model    数据模型层：entity(PO) / bo / dto / vo（本示例暂无内容，保留分层脚手架）
+          client4-service  业务层：sso 域支撑组件（签名 / 协议请求 / 本地会话 / 防重放缓存）
+          client4-api      对外接口层：Controller（SSO 协议入口 / 登录态 / 账号资料接口）
+          client4-web      启动与装配：启动类 / Spring 配置（CORS）/ application.yml（可执行 jar）
+
+        NoSdk 模式：不引入任何 Pkuse-Token 依赖，仅使用 SpringBoot Web。
+        SSO 协议（/sso/auth 授权、/sso/pushS 的 checkTicket / signout / userinfo 消息、
+        MD5 参数签名）全部由本项目手动实现。
+    -->
+    <modules>
+        <module>client4-common</module>
+        <module>client4-model</module>
+        <module>client4-service</module>
+        <module>client4-api</module>
+        <module>client4-web</module>
+    </modules>
+
     <properties>
+        <revision>0.0.1-SNAPSHOT</revision>
         <java.version>17</java.version>
     </properties>
 
-    <dependencies>
-        <!--
-             NoSdk 模式：不引入任何 Pkuse-Token 依赖，仅使用 SpringBoot Web。
-             SSO 协议（/sso/auth 授权、/sso/pushS 的 checkTicket / signout / userinfo 消息、
-             MD5 参数签名）全部由本项目手动实现。
-         -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <!-- 内部模块 -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client4-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client4-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client4-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client4-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
+            <!-- flatten 统一版本号管理（${revision} 展开到 install/deploy 的 POM） -->
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.7.3</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,97 @@
+# ===================================================================
+#  client5：模式三对接（跨域 + 跨 Redis，client3 的第二实例）
+#    跨域    ：部署在 127.0.0.1（与认证中心 localhost 不同域），Cookie 不共享
+#    跨 Redis：使用自己的 Redis（db7，独立于认证中心 db5 与客户端3 db6）
+#              —— ticket 通过 HTTP 接口向认证中心校验（is-http=true）
+# ===================================================================
+server:
+  port: 9005
+
+spring:
+  application:
+    name: pkuse-token-demo-user-center-client5
+
+  # 业务数据库：magic-api 资源库（s_api_manage）+ 开放调用方表（s_open_client）
+  # KingbaseES，与用户中心 server 同款（可按需替换数据库与驱动）；首次启动前请执行 db/init-client5.sql
+  datasource:
+    driver-class-name: com.kingbase8.Driver
+    url: jdbc:kingbase8://192.168.1.77:54321/PKUSE_TOKEN_USER_CENTER
+    username: DEV_USER_CENTER
+    password: Beid@s0ft
+
+    # Druid 连接池参数
+    druid:
+      initial-size: 2
+      min-idle: 2
+      max-active: 8
+      max-wait: 6000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+
+  # 模式三：本应用自己的 Redis（与认证中心、client3 都不是同一个库）
+  data:
+    redis:
+      database: 7
+      host: 192.168.1.75
+      port: 6379
+      password: bds0ft@2025
+      timeout: 10s
+
+# ORM：MyBatis-Plus（驼峰映射默认开启；主键为 32 位 UUID，由应用生成）
+mybatis-plus:
+  global-config:
+    banner: false
+
+sa-token:
+  # 打印操作日志
+  is-log: true
+
+  # 开放接口令牌（/open/token）签发的会话 loginId 形如 open:{client}，必须允许冒号
+  allow-login-id-colon: true
+
+  # SSO-Client 配置
+  sso-client:
+    # 应用标识（需与用户中心「应用管理」中的登记一致）
+    client: sso-client5
+    # SSO-Server 端（认证中心）主机地址
+    server-url: http://localhost:9000
+    # API 接口调用秘钥（参数签名/消息推送校验使用，与认证中心登记一致）
+    secret-key: SSO-C5-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
+    # 模式三：使用 HTTP 请求向认证中心校验 ticket
+    is-http: true
+
+# 快速接口开发平台
+magic-api:
+  web: /api-manage/console
+  # 编辑器登录账号：magic-auth.editor-auth=builtin（默认）时生效；
+  # 配置为 pkuse-token 后编辑器改用认证中心统一账号（见 PkuseTokenAuthorizationInterceptor），此处配置不再使用
+  security:
+    username: admin
+    password: Beid@s0ft.com
+  resource:
+    type: database
+    table-name: s_api_manage
+  task:
+    enable: true
+    pool:
+      size: 8
+
+# ==================== magic-api 接口鉴权（Pkuse-Token，见 config/magic 包） ====================
+magic-auth:
+  # 鉴权总开关：false 时所有 magic 接口匿名放行（仅本地调试用）
+  enabled: true
+  # 匿名放行的 magic 接口（Ant 通配，匹配完整请求路径），例如：
+  #   - /test/**
+  anonymous-paths: []
+  # 编辑器鉴权方式：
+  #   builtin     —— magic-api 内置静态账号（上方 magic-api.security 配置，默认）
+  #   pkuse-token —— 认证中心统一账号（先 /sso/doLogin 校验，再本地建 pkuse-token 会话）
+  editor-auth: builtin
+
+# 开放接口调用方已由静态配置（magic-open.clients）提取为动态管理模块：
+#   存储：数据库表 s_open_client（Druid + MyBatis-Plus，见 client5-service 的 magic 域）
+#   管理：GET/POST/PUT/DELETE /open/clients（需 pkuse-token 登录；启禁用/重置密钥/删除即时生效并吊销令牌）
+#   签发：POST /open/token 按表内登记的 client/secret 实时校验签名
+# 种子数据见 db/init-client5.sql

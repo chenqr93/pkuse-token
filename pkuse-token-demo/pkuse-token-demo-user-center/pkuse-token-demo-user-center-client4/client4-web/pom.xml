@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client4-web</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client4-web</name>
+    <description>客户端4 - 启动与装配：启动类 / Spring 配置（CORS）/ application.yml（可执行 jar）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client4</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 内部模块（api 传递引入 service / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client4-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client4-service</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

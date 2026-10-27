@@ -17,5 +17,5 @@ export default {
   loginMode: 'ticket',
 
   // 认证中心控制台地址（页面上提供返回入口）
-  consoleUrl: 'http://localhost:8090'
+  consoleUrl: 'http://localhost:5173'
 }

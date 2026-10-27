@@ -36,14 +36,14 @@ spring:
 sa-token:
   sso-server:
     # 主页路由：访问 /sso/auth 未指定 redirect 参数时跳转的地址（这里指向前端工作台）
-    home-route: http://localhost:8090/workbench
+    home-route: http://localhost:5173/workbench
     # 演示环境：跳过 SSO 参数签名校验（生产环境必须为 true）
     is-check-sign: false
 
 # ------------------- 用户中心自定义配置 -------------------
 user-center:
   # 前端（统一登录页）地址：未登录访问 /sso/auth 时跳转到这里
-  frontend-base-url: http://localhost:8090
+  frontend-base-url: http://localhost:5173
 
   # 登录安全：部署级参数（管理员登录后在「规则配置」中不暴露的项）
   login:

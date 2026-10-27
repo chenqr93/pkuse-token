@@ -3,7 +3,7 @@
 Pkuse-Token 用户中心的 Vue3 前端：**统一登录页 / 工作台 / 用户管理 / 应用管理 / 登录日志 / 操作日志 / 规则配置 / 修改密码**。
 
 - 技术栈：Vue 3.4 + Vite 4 + Vue Router 4 + Axios + Element Plus 2.8
-- 端口：`8090`（`/api`、`/sso` 已代理到后端 `http://localhost:8091`）
+- 端口：`5173`（`/api`、`/sso` 已代理到后端 `http://localhost:9000`）
 - 后端工程：`../pkuse-token-demo-user-center-server`
 - 完整启动步骤与演示说明：见 `../README.md`
 
@@ -29,13 +29,13 @@ Pkuse-Token 用户中心的 Vue3 前端：**统一登录页 / 工作台 / 用户
 - `token` 存入 `localStorage`，XHR 请求通过 `satoken` 请求头携带（`src/utils/request.js` 统一注入与 401 处理）；
 - 同时把 `token` 同步写入 Cookie：浏览器整页跳转到认证中心 `/sso/auth` 时自动携带登录态；
 - 角色判断见 `src/utils/auth.js#isAdmin`（`role === 'admin'`），用于菜单显示与路由守卫；
-- 开发环境前端 8090 与后端 8091 同为 `localhost`（Cookie 不区分端口），生产环境建议同域部署。
+- 开发环境前端 5173 与后端 9000 同为 `localhost`（Cookie 不区分端口），生产环境建议同域部署。
 
 ## 启动与构建
 
 ```bash
 npm install
-npm run dev       # 开发模式  http://localhost:8090
+npm run dev       # 开发模式  http://localhost:5173
 npm run build     # 构建产物输出到 dist/
 npm run preview   # 预览构建产物
 ```

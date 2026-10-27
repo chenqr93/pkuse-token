@@ -244,13 +244,14 @@ INSERT INTO uc_user (id, username, password, nickname, email, phone, role, statu
   ('10002', 'zhangsan', 'e10adc3949ba59abbe56e057f20f883e', '张三',       'zhangsan@bdsoft.com', '13800000002', 'user',  1, '演示用户（已授权：客户端1、客户端2）', now(), now()),
   ('10003', 'lisi',     'e10adc3949ba59abbe56e057f20f883e', '李四',       'lisi@bdsoft.com',     '13800000003', 'user',  0, '演示用户（已禁用；已授权：客户端3）', now(), now());
 
--- 应用：对应四种对接模式的客户端 Demo（client1~client4）
--- 约定：认证中心 localhost:9000；client1 同域（localhost）；client2/3/4 跨域（127.0.0.1）
+-- 应用：对应四种对接模式的客户端 Demo（client1~client4，client5 为模式三第二实例）
+-- 约定：认证中心 localhost:9000；client1 同域（localhost）；client2/3/4/5 跨域（127.0.0.1）
 INSERT INTO uc_client (id, client_id, client_name, allow_url, entry_url, secret_key, is_push, push_url, is_slo, status, remark, create_time, update_time) VALUES
   ('20001', 'sso-client1', '单点登录客户端1', '*', 'http://localhost:5174/login', 'SSO-C1-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 0, '/sso/pushC', 1, 1, '模式一：同域（localhost）+ 同 Redis（共享会话）', now(), now()),
   ('20002', 'sso-client2', '单点登录客户端2', '*', 'http://127.0.0.1:5175/login', 'SSO-C2-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 0, '/sso/pushC', 1, 1, '模式二：跨域（127.0.0.1）+ 同 Redis（ticket 直连 Redis 校验）', now(), now()),
   ('20003', 'sso-client3', '单点登录客户端3', '*', 'http://127.0.0.1:5176/login', 'SSO-C3-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 1, 'http://127.0.0.1:9003/sso/pushC', 1, 1, '模式三：跨域 + 独立 Redis（HTTP 接口校验 ticket）', now(), now()),
-  ('20004', 'sso-client4', '单点登录客户端4（NoSdk）', '*', 'http://127.0.0.1:5177/login', 'SSO-C4-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 1, 'http://127.0.0.1:9004/sso/pushC', 1, 1, 'NoSdk 对接示例（手动实现 SSO 协议与签名，不依赖 Pkuse-Token 客户端 SDK）', now(), now());
+  ('20004', 'sso-client4', '单点登录客户端4（NoSdk）', '*', 'http://127.0.0.1:5177/login', 'SSO-C4-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 1, 'http://127.0.0.1:9004/sso/pushC', 1, 1, 'NoSdk 对接示例（手动实现 SSO 协议与签名，不依赖 Pkuse-Token 客户端 SDK）', now(), now()),
+  ('20005', 'sso-client5', '单点登录客户端5', '*', 'http://127.0.0.1:5178/login', 'SSO-C5-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor', 1, 'http://127.0.0.1:9005/sso/pushC', 1, 1, '模式三第二实例：跨域 + 独立 Redis db7（HTTP 接口校验 ticket）', now(), now());
 
 -- 用户-应用授权绑定（admin 为系统管理员，可访问全部应用，无需绑定）
 INSERT INTO uc_user_client (id, user_id, client_id, create_time) VALUES

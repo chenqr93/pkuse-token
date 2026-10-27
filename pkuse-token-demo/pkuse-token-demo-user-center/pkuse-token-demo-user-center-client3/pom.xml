@@ -2,12 +2,13 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>com.bdsoft</groupId>
     <artifactId>pkuse-token-demo-user-center-client3</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
     <name>pkuse-token-demo-user-center-client3</name>
-    <description>SSO 客户端示例3：模式三对接（跨域 + 跨 Redis，HTTP 接口校验 ticket）</description>
+    <description>SSO 客户端示例3（分层多模块）：common / model / service / api / web —— 模式三对接（跨域 + 跨 Redis，HTTP 接口校验 ticket）</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -16,7 +17,24 @@
         <relativePath/>
     </parent>
 
+    <!--
+        分层约定（依赖单向：web → api → service → model → common，无环），与用户中心 server 同风格：
+          client3-common   通用层（零内部依赖叶子）：注解 / 业务异常 / 工具 / 配置定义（本示例暂无内容，保留分层脚手架）
+          client3-model    数据模型层：entity(PO) / bo / dto / vo（本示例暂无内容，保留分层脚手架）
+          client3-service  业务层：Service + Mapper + 域内支撑（本示例暂无内容，SSO 协议处理直接在 api 层演示）
+          client3-api      对外接口层：Controller（SSO 协议入口 / 登录态 / 账号资料接口）
+          client3-web      启动与装配：启动类 / Spring 配置（CORS、HttpTemplate）/ application.yml（可执行 jar）
+    -->
+    <modules>
+        <module>client3-common</module>
+        <module>client3-model</module>
+        <module>client3-service</module>
+        <module>client3-api</module>
+        <module>client3-web</module>
+    </modules>
+
     <properties>
+        <revision>0.0.1-SNAPSHOT</revision>
         <java.version>17</java.version>
         <pkuse-token.version>1.46.0</pkuse-token.version>
         <netty.version>4.1.135.Final</netty.version>
@@ -32,52 +50,76 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- 内部模块 -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client3-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client3-model</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client3-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>client3-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <!-- 第三方（版本由 spring-boot-starter-parent 管理的不在此重复声明） -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+                <version>${pkuse-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-sso</artifactId>
+                <version>${pkuse-token.version}</version>
+            </dependency>
+            <!-- 模式三：本应用使用自己的 Redis（spring.data.redis 配置），故不引入 alone-redisson -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
+                <version>${pkuse-token.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
-    <dependencies>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bdsoft</groupId>
-            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
-            <version>${pkuse-token.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.bdsoft</groupId>
-            <artifactId>pkuse-token-sso</artifactId>
-            <version>${pkuse-token.version}</version>
-        </dependency>
-
-        <!-- 模式三：本应用使用自己的 Redis（spring.data.redis 配置），故不引入 alone-redisson -->
-        <dependency>
-            <groupId>com.bdsoft</groupId>
-            <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
-            <version>${pkuse-token.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-pool2</artifactId>
-        </dependency>
-
-        <!-- Redisson 被排除的 netty-codec（Redisson 客户端运行必需） -->
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-codec</artifactId>
-        </dependency>
-
-    </dependencies>
-
     <build>
         <plugins>
+            <!-- flatten 统一版本号管理（${revision} 展开到 install/deploy 的 POM） -->
             <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.7.3</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

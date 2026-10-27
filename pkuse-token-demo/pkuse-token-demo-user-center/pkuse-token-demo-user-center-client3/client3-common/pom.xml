@@ -1,0 +1,19 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client3-common</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client3-common</name>
+    <description>客户端3 - 通用层（零内部依赖叶子）：自定义注解 / 业务异常 / 工具类 / 配置定义（本示例暂无内容，保留分层脚手架）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client3</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+</project>

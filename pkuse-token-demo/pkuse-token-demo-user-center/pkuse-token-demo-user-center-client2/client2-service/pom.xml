@@ -1,0 +1,31 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client2-service</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client2-service</name>
+    <description>客户端2 - 业务层：Service 接口 + impl + Mapper + 域内支撑（本示例暂无内容，SSO 协议处理直接在 api 层演示）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client2</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 内部模块 -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client2-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client2-common</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

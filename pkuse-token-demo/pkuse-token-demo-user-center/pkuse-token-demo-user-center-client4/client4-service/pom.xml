@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client4-service</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client4-service</name>
+    <description>客户端4 - 业务层：sso 域支撑组件（SsoSignUtil 签名 / SsoRequestUtil 协议请求 / LocalSessionStore 本地会话 / NonceCache 防重放）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client4</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 通用层（NoSdk 客户端配置定义） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client4-common</artifactId>
+        </dependency>
+
+        <!-- Spring（支撑组件的 @Component 注册） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <!-- Jackson（SsoRequestUtil 解析认证中心响应） -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

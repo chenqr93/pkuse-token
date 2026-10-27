@@ -1,0 +1,43 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client3-api</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client3-api</name>
+    <description>客户端3 - 对外接口层：Controller（SSO 协议入口 / 登录态 / 账号资料接口）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client3</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 业务层（传递引入 model / common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client3-service</artifactId>
+        </dependency>
+
+        <!-- Web（@RestController / @RequestMapping） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!-- Pkuse-Token（StpUtil / PkuseResult / SSO 协议处理器，Controller 直接使用） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

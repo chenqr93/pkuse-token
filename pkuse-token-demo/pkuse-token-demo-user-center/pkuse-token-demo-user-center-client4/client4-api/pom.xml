@@ -1,0 +1,33 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>client4-api</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>client4-api</name>
+    <description>客户端4 - 对外接口层：Controller（SSO 协议入口 / 登录态 / 账号资料 / pushC 推送接收接口）</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-demo-user-center-client4</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+        <!-- 业务层（传递引入 common） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>client4-service</artifactId>
+        </dependency>
+
+        <!-- Web（@RestController / @RequestMapping） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

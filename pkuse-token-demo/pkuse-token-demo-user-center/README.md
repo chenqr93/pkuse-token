@@ -12,14 +12,16 @@ pkuse-token-demo-user-center/
 │   └── usercenter-web/                         #   启动与装配：启动类 / Spring 配置 / application.yml / db 脚本
 ├── pkuse-token-demo-user-center-server-vue3/   # 用户中心前端（Vue3 + Vite + Element Plus）
 ├── SSO-CLIENTS.md                              # ★ 四种对接模式客户端 Demo 说明（模式一/二/三/NoSdk）
-├── pkuse-token-demo-user-center-client1/       # 客户端1 后端：模式一（同域 + 同 Redis）
+├── pkuse-token-demo-user-center-client1/       # 客户端1 后端（分层多模块：client1-common/model/service/api/web）：模式一（同域 + 同 Redis）
 ├── pkuse-token-demo-user-center-client1-vue3/  # 客户端1 前端（Vue3）
-├── pkuse-token-demo-user-center-client2/       # 客户端2 后端：模式二（跨域 + 同 Redis）
+├── pkuse-token-demo-user-center-client2/       # 客户端2 后端（分层多模块，结构同 client1）：模式二（跨域 + 同 Redis）
 ├── pkuse-token-demo-user-center-client2-vue3/  # 客户端2 前端（Vue3）
-├── pkuse-token-demo-user-center-client3/       # 客户端3 后端：模式三（跨域 + 跨 Redis）
+├── pkuse-token-demo-user-center-client3/       # 客户端3 后端（分层多模块，结构同 client1）：模式三（跨域 + 跨 Redis）
 ├── pkuse-token-demo-user-center-client3-vue3/  # 客户端3 前端（Vue3）
-├── pkuse-token-demo-user-center-client4/       # 客户端4 后端：NoSdk（不依赖 SDK，手动实现协议）
-└── pkuse-token-demo-user-center-client4-vue3/  # 客户端4 前端（Vue3）
+├── pkuse-token-demo-user-center-client4/       # 客户端4 后端（分层多模块；common 含 NoSdk 配置定义、service 含 sso 域支撑组件）：NoSdk（不依赖 SDK，手动实现协议）
+├── pkuse-token-demo-user-center-client4-vue3/  # 客户端4 前端（Vue3）
+├── pkuse-token-demo-user-center-client5/       # 客户端5 后端（分层多模块，结构同 client3）：模式三第二实例（跨域 + 跨 Redis，独立 db7）
+└── pkuse-token-demo-user-center-client5-vue3/  # 客户端5 前端（Vue3）
 ```
 
 ## 一、功能清单
@@ -34,7 +36,7 @@ pkuse-token-demo-user-center/
 | 操作日志 | 平台管理动作审计：新增/修改/删除用户、重置密码、启用禁用、授权与批量授权、在线解锁、解绑设备，应用的新增/修改/启用禁用/删除等；记录操作人、模块、动作、请求方法、**请求参数摘要**、**修改前/修改后数据快照**（新增=传参+写入数据、更新=传参+修改前+修改后、删除=传参+删除前数据；敏感字段脱敏，由 MyBatis-Plus 拦截器自动捕获、不限定实体类型）、结果与说明、耗时、IP/UA，**成功与失败都记录**；同样**按月份表存储**（`uc_oper_log_yyyyMM`），支持操作人/模块/动作/结果/时间范围筛选与参数详情查看 |
 | 规则配置 | **仅系统管理员**：在线维护平台规则——**密码复杂度**（最小长度/大小写/数字/特殊字符）、**首次登录强制修改密码**、**设备验证（设备锁）开关**、**踢掉同类型设备在线账号**（PC/移动端/小程序同类型互踢）、**滑块验证码开关与触发阈值**、**系统默认密码**、**失败锁定策略**（阈值/窗口/时长）、**登录日志与操作日志的分区频率**（按月/按周/按天）；保存后**即时生效**（无需重启），支持一键恢复默认 |
 | 登录安全 | **密码国密 SM3 摘要**（随机盐，历史 MD5 无感升级）；**连续密码错误锁定 + 管理员在线解锁**；**滑块验证码**（tianai-captcha）；**设备锁 + 设备指纹**（首次登录绑定，更换设备需手机验证码验证后自动换绑）；**首次登录强制修改密码**；**多端在线与同类型设备互踢**（同一账号可分别在 PC / 移动端 / 小程序在线，「规则配置 - 踢掉同类型设备在线账号」开启后同类型新登录会顶掉该类型旧会话）；以上策略均可在「规则配置」中在线调整 |
-| 客户端对接 Demo | 四种对接模式：模式一（同域+同Redis）、模式二（跨域+同Redis）、模式三（跨域+跨Redis）、NoSdk（手动实现协议）——详见 [SSO-CLIENTS.md](SSO-CLIENTS.md) |
+| 客户端对接 Demo | 四种对接模式：模式一（同域+同Redis）、模式二（跨域+同Redis）、模式三（跨域+跨Redis）、NoSdk（手动实现协议）；client5 为模式三第二实例（跨域+跨Redis，独立 db7）——详见 [SSO-CLIENTS.md](SSO-CLIENTS.md) |
 | 权限模型 | **系统管理员**（role=admin）：可维护用户与应用、可进入全部应用；**普通用户**：只能进入工作台，且**只能进入已授权应用**（工作台入口与统一登录两处校验） |
 
 ## 二、技术栈
@@ -70,13 +72,13 @@ ksql -h 192.168.1.77 -p 54321 -U DEV_USER_CENTER -d PKUSE_TOKEN_USER_CENTER \
 >
 > 脚本会创建 `uc_user`、`uc_client`、`uc_user_client`、`uc_user_device`、`uc_login_log`（登录日志，分区父表）、
 > `uc_oper_log`（操作日志，分区父表）、`uc_config`（规则配置）等表，
-> 并写入演示数据（3 个用户、4 个应用、3 条授权关系）；日志的月分表由后端启动时/每日定时自动创建。
+> 并写入演示数据（3 个用户、5 个应用、3 条授权关系）；日志的月分表由后端启动时/每日定时自动创建。
 > 「规则配置」中的 17 项配置默认值同样由后端启动时自动写入（后续版本新增配置项无需执行 SQL）。
 >
 > 已按旧版本部署过的库，按顺序执行增量脚本即可：
 > ```bash
 > cd pkuse-token-demo-user-center-server/usercenter-web/src/main/resources/db
-> for f in upgrade-v2-authorization.sql upgrade-v3-clients.sql upgrade-v4-login-security.sql upgrade-v5-sm-crypto.sql upgrade-v6-oper-log.sql upgrade-v7-config.sql; do
+> for f in upgrade-v2-authorization.sql upgrade-v3-clients.sql upgrade-v4-login-security.sql upgrade-v5-sm-crypto.sql upgrade-v6-oper-log.sql upgrade-v7-config.sql upgrade-v8-oper-log-snapshot.sql upgrade-v9-client5.sql; do
 >   ksql -h 192.168.1.77 -p 54321 -U DEV_USER_CENTER -d PKUSE_TOKEN_USER_CENTER -f $f
 > done
 > ```
@@ -102,7 +104,7 @@ spring:
       password: bds0ft@2025
 
 user-center:
-  frontend-base-url: http://localhost:8090   # 统一登录页地址（未登录访问 /sso/auth 时跳转到这里）
+  frontend-base-url: http://localhost:5173   # 统一登录页地址（未登录访问 /sso/auth 时跳转到这里）
   # 登录安全：仅保留部署级参数；失败计数窗口/锁定阈值/验证码策略/设备验证开关/默认密码/密码复杂度/
   #          日志分区频率等运行期规则已迁移到「规则配置」模块（表 uc_config，管理员在线维护，即时生效）
   login:
@@ -116,7 +118,7 @@ captcha:
     default: 120000              # 滑块验证码有效期（毫秒）
 ```
 
-### 4. 启动后端（端口 8091）
+### 4. 启动后端（端口 9000）
 
 ```bash
 cd pkuse-token-demo-user-center-server
@@ -135,7 +137,7 @@ mvn -DskipTests install && mvn -f usercenter-web/pom.xml spring-boot:run
 SSO 客户端配置已同步，当前生效应用：[sso-client1, sso-client2, sso-client3]
 ```
 
-### 5. 启动前端（端口 8090）
+### 5. 启动前端（端口 5173）
 
 ```bash
 cd pkuse-token-demo-user-center-server-vue3
@@ -143,7 +145,7 @@ npm install
 npm run dev
 ```
 
-浏览器访问 <http://localhost:8090>（开发环境已配置 `/api`、`/sso` 代理到 `http://localhost:8091`）。
+浏览器访问 <http://localhost:5173>（开发环境已配置 `/api`、`/sso` 代理到 `http://localhost:9000`）。
 
 ### 6. 演示账号
 
@@ -157,7 +159,7 @@ npm run dev
 
 ### 管理员视角（admin / 123456）
 
-1. **统一登录**：打开 <http://localhost:8090> → 登录 → 进入工作台。
+1. **统一登录**：打开 <http://localhost:5173> → 登录 → 进入工作台。
 2. **工作台**：查看用户/应用统计与**当前在线人数**（首位红色卡片；基于 Redis 登录会话统计，
    退出登录、被踢下线、删除用户会即时下降；删除用户时其全部在线会话同步注销）、
    已接入应用列表（含「已授权用户」数与同步状态）、认证中心配置、我的应用入口（管理员为全部启用应用）。
@@ -202,7 +204,7 @@ npm run dev
 7. **统一登录（SSO）全链路**：在浏览器地址栏直接访问下面的授权地址（模拟应用跳转）：
 
    ```
-   http://localhost:8091/sso/auth?client=sso-client1&redirect=http://localhost:9001/sso/login&mode=ticket
+   http://localhost:9000/sso/auth?client=sso-client1&redirect=http://localhost:9001/sso/login&mode=ticket
    ```
 
    - 未登录时：认证中心 302 跳转到统一登录页，页面提示「应用 sso-client1 正在请求统一登录」；
@@ -255,7 +257,7 @@ npm run dev
    sa-token:
      sso-client:
        client: sso-client1                     # 与应用管理中的「应用标识」一致
-       server-url: http://localhost:8091       # 认证中心地址
+       server-url: http://localhost:9000       # 认证中心地址
    ```
 
    ```java
@@ -270,13 +272,13 @@ npm run dev
 3. 应用跳转授权地址即可完成统一登录：
 
    ```
-   http://localhost:8091/sso/auth?client=sso-client1&redirect={应用回调地址}&mode=ticket
+   http://localhost:9000/sso/auth?client=sso-client1&redirect={应用回调地址}&mode=ticket
    ```
 
 ### 5.3 前端登录页与认证中心的跳转时序
 
 ```
-应用(9001)               认证中心(8091)                统一登录页(8090)
+应用(9001)               认证中心(9000)                统一登录页(5173)
    │  /sso/auth?client=..&redirect=..  │                       │
    ├──────────────────────────────────▶ │  未登录                │
    │                                    │  302 ─────────────────▶│ /login?redirect={原始授权地址}
@@ -291,7 +293,7 @@ npm run dev
 
 > **登录态如何跨系统传递**：登录接口除了返回 `token`，框架还会自动写入 `satoken` Cookie。
 > 前端登录成功后将 token 存入 `localStorage`（请求头 `satoken` 用于 XHR）并同步写入 Cookie
-> （浏览器整页跳转 `/sso/auth` 时自动携带）。开发环境前端 8090 与后端 8091 同为 `localhost`
+> （浏览器整页跳转 `/sso/auth` 时自动携带）。开发环境前端 5173 与后端 9000 同为 `localhost`
 > （Cookie 不区分端口），因此可行；生产环境推荐前后端同域部署（Nginx 反向代理）。
 
 ## 六、接口清单

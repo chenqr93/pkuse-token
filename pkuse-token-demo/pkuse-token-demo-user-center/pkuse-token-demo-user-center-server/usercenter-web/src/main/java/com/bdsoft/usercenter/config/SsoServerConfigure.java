@@ -42,7 +42,7 @@ public class SsoServerConfigure {
     private final UcUserService userService;
 
     /** 前端（统一登录页）地址 */
-    @Value("${user-center.frontend-base-url:http://localhost:8090}")
+    @Value("${user-center.frontend-base-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
     public SsoServerConfigure(AuthService authService, UcUserService userService) {

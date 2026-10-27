@@ -111,7 +111,7 @@ const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta.title || '用户中心')
 const displayName = computed(() => user.value.nickname || user.value.username || '未登录')
 const avatarText = computed(() => (displayName.value || 'U').charAt(0))
-const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:8091`)
+const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:9000`)
 
 onMounted(async () => {
   // 拉取最新的当前用户信息，保持顶栏信息准确

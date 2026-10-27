@@ -3,7 +3,7 @@
 #  TODO：部署前将数据源 / Redis / 各地址修改为测试环境实际值
 # ===================================================================
 server:
-  port: 8091
+  port: 9000
 
 spring:
   # ------------------- 数据源：人大金仓 KingbaseES（p6spy 代理，部门标准强制） -------------------
@@ -37,14 +37,14 @@ spring:
 sa-token:
   sso-server:
     # 主页路由：访问 /sso/auth 未指定 redirect 参数时跳转的地址（指向测试环境工作台）
-    home-route: http://TODO_TEST_FRONTEND_HOST:8090/workbench
+    home-route: http://TODO_TEST_FRONTEND_HOST:5173/workbench
     # 测试环境：与开发联调阶段可保持 false（生产环境必须为 true）
     is-check-sign: false
 
 # ------------------- 用户中心自定义配置 -------------------
 user-center:
   # 前端（统一登录页）地址：未登录访问 /sso/auth 时跳转到这里
-  frontend-base-url: http://TODO_TEST_FRONTEND_HOST:8090
+  frontend-base-url: http://TODO_TEST_FRONTEND_HOST:5173
 
   # 登录安全：部署级参数（管理员登录后在「规则配置」中不暴露的项）
   login:

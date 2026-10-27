@@ -23,7 +23,7 @@ public class UserCenterServerApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(UserCenterServerApplication.class, args);
-        log.info("启动成功：用户中心后端 http://localhost:8091");
+        log.info("启动成功：用户中心后端 http://localhost:9000");
     }
 
 }

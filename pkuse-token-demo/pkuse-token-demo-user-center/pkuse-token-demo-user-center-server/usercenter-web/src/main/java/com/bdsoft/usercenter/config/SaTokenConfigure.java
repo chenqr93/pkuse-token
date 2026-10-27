@@ -69,12 +69,13 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
     /**
      * 跨域配置：开发时前端（vite dev server）默认通过代理访问后端，
-     * 此处放开 8090 端口，便于前端直连调试。
+     * 此处放开 5173 端口（vite.config 当前端口），便于前端直连调试。
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("http://localhost:8090", "http://127.0.0.1:8090")
+                .allowedOriginPatterns(
+                        "http://localhost:5173", "http://127.0.0.1:5173")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)

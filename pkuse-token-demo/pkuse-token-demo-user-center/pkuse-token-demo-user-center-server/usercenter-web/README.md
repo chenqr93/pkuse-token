@@ -4,7 +4,7 @@ Pkuse-Token 用户中心示例的后端服务：**用户管理 + 应用（Client
 
 - 技术栈：SpringBoot 3.5.16 / JDK 17 / MyBatis-Plus 3.5.14（含内置插件：分页、数据变更捕获）/ KingbaseES / Druid 1.2.27 连接池 / Pkuse-Token 1.46.0 / Redisson / Spring AOP / Log4j2 2.24.3 + p6spy 3.9.1 + JavaMelody 2.6.0（日志与 SQL/运行监控，部门标准强制）
 - 主键策略：MyBatis-Plus `ASSIGN_UUID`（32 位 UUID 字符串，String 主键）；**从旧版本（雪花 ID）升级需重建数据库**（列类型 BIGINT → VARCHAR(32)，数据不保留），新库直接执行 init.sql
-- 端口：`8091`；数据库：`PKUSE_TOKEN_USER_CENTER`（表 `uc_user`、`uc_client`、`uc_user_client`、`uc_user_device`、`uc_login_log`、`uc_oper_log`、`uc_config`）
+- 端口：`9000`；数据库：`PKUSE_TOKEN_USER_CENTER`（表 `uc_user`、`uc_client`、`uc_user_client`、`uc_user_device`、`uc_login_log`、`uc_oper_log`、`uc_config`）
 - 前端工程：`../pkuse-token-demo-user-center-server-vue3`
 - 完整启动步骤与演示说明：见 `../README.md`
 

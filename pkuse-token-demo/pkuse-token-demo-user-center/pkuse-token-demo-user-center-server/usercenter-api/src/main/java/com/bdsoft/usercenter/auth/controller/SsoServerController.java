@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
  * SSO-Server 端协议入口（统一登录认证中心）
  *
  * <pre>
- *   http://localhost:8091/sso/auth      单点登录授权地址（Client 端重定向过来）
- *   http://localhost:8091/sso/doLogin   账号密码登录接口，接受参数：name、pwd
- *   http://localhost:8091/sso/signout   单点注销地址（is-slo=true 时可用）
- *   http://localhost:8091/sso/pushS     接收 Client 端推送的消息
+ *   http://localhost:9000/sso/auth      单点登录授权地址（Client 端重定向过来）
+ *   http://localhost:9000/sso/doLogin   账号密码登录接口，接受参数：name、pwd
+ *   http://localhost:9000/sso/signout   单点注销地址（is-slo=true 时可用）
+ *   http://localhost:9000/sso/pushS     接收 Client 端推送的消息
  * </pre>
  *
  * <p>
