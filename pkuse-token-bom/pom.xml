@@ -12,7 +12,7 @@
     <description>Pkuse-Token Bom</description>
 
     <properties>
-        <revision>1.46.0</revision>
+        <revision>1.46.1</revision>
 
     </properties>
 
@@ -23,6 +23,18 @@
             <name>eric</name>
         </developer>
     </developers>
+
+    <!-- 发布到 cnb 私服（本 pom 无 parent，需自带；id 与 settings 的 server 对齐） -->
+    <distributionManagement>
+        <repository>
+            <id>pkuse-cloud-maven</id>
+            <url>https://maven.cnb.cool/pkuse/cloud-maven/-/packages/</url>
+        </repository>
+        <snapshotRepository>
+            <id>pkuse-cloud-maven</id>
+            <url>https://maven.cnb.cool/pkuse/cloud-maven/-/packages/</url>
+        </snapshotRepository>
+    </distributionManagement>
 
     <dependencyManagement>
         <dependencies>
@@ -86,6 +98,11 @@
             <dependency>
                 <groupId>com.bdsoft</groupId>
                 <artifactId>pkuse-token-redisson-spring-boot-starter</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-auth-center-client-spring-boot-starter</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>

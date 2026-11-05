@@ -31,6 +31,7 @@
         <module>pkuse-token-alone-redisson</module>
         <module>pkuse-token-spring-aop</module>
         <module>pkuse-token-redisson-spring-boot-starter</module>
+        <module>pkuse-token-auth-center-client-spring-boot-starter</module>
     </modules>
 
     <dependencyManagement>

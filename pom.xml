@@ -26,7 +26,7 @@
 
 	<!-- 一些属性 -->
 	<properties>
-        <revision>1.46.0</revision>
+        <revision>1.46.1</revision>
         <jdk.version>17</jdk.version>
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
@@ -39,7 +39,20 @@
 			<name>eric</name>
 		</developer>
 	</developers>
-	
+
+	<!-- 发布到 cnb 私服（认证凭据在 settings 的 server：id 与下面对齐；发布命令：
+	     mvn -s C:\Users\chenq\.m2\settings-cnb.xml clean deploy -DskipTests ） -->
+	<distributionManagement>
+		<repository>
+			<id>pkuse-cloud-maven</id>
+			<url>https://maven.cnb.cool/pkuse/cloud-maven/-/packages/</url>
+		</repository>
+		<snapshotRepository>
+			<id>pkuse-cloud-maven</id>
+			<url>https://maven.cnb.cool/pkuse/cloud-maven/-/packages/</url>
+		</snapshotRepository>
+	</distributionManagement>
+
 	<!-- 仓库依赖 -->
 	<dependencies>
 		

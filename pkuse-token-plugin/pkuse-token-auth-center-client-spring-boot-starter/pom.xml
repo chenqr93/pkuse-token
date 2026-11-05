@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>pkuse-token-plugin</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <name>pkuse-token-auth-center-client-spring-boot-starter</name>
+    <artifactId>pkuse-token-auth-center-client-spring-boot-starter</artifactId>
+    <description>授权中心客户端 SDK：签名调用封装 + 权限/角色缓存（陈旧兜底）+ StpInterface 适配 + 可选菜单/权限码/角色端点；各应用引依赖写配置即接入</description>
+
+    <dependencies>
+
+        <!-- 自动装配 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <!-- Web（AuthzClientController 可选暴露；请求对象解析） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JSON 解析（授权中心 /open/authz/* 响应） -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+
+        <!-- Pkuse-Token（StpInterface 适配与端点取当前登录用户；optional：NoSdk 应用不引入也可用签名调用能力） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+            <version>${project.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+    </dependencies>
+
+</project>

@@ -6,7 +6,7 @@ Pkuse-Token 由 [Sa-Token v1.46.0](https://sa-token.com) 改造而来（构件�
 
 - **支持 Spring Boot 3 与 4**（基线分别为 3.5.16/Spring 6.2.19、4.1.1/Spring 7.0.9），Java 17 基线，编译开启 `-parameters`；
 - **单线存储选型 Redisson**，SSO 全家桶演示与存储层完全对齐；
-- **模块高度精简**：reactor 24 个模块、10 个插件，SB2 历史包袱与无用模块已清除。
+- **模块高度精简**：reactor 25 个模块、11 个插件，SB2 历史包袱与无用模块已清除。
 
 ---
 
@@ -80,7 +80,7 @@ pkuse-token-spring-boot3-starter        ← 应用唯一需要引入的依赖
 
 > 模块名中的 `v3v4` 表示同时服务 Spring Boot 3 与 4 两个大版本（SB2 已退出，原名中的 v2 已于改名时去除）。
 
-### 2.3 插件层（9 个模块）
+### 2.3 插件层（11 个模块，下表含核心 10 个；另有 jackson3 见依赖清单）
 
 | 插件 | 依赖 | 说明 |
 |---|---|---|
@@ -93,6 +93,7 @@ pkuse-token-spring-boot3-starter        ← 应用唯一需要引入的依赖
 | `pkuse-token-redisson-spring-boot-starter` | redisson | Redisson DAO 的 Spring Boot 自动装配 |
 | `pkuse-token-alone-redisson` | redisson | 为 token 配置独立 Redis 连接（`sa-token.alone-redisson.config`，Redisson 原生 YAML） |
 | `pkuse-token-spring-aop` | core | 非 Controller 方法上的注解鉴权（AOP 切面） |
+| `pkuse-token-auth-center-client-spring-boot-starter` | core（optional） | **授权中心客户端 SDK**：签名拉取本应用菜单/权限码/角色（TTL 缓存 + 陈旧兜底）、`StpInterface` 自动适配（checkRole/checkPermission 开箱即用）、授权变更推送失效端点；配合用户中心/授权中心 demo 使用 |
 
 SSO 多端共享会话的最小依赖组合：`spring-boot3-starter + sso + redisson-spring-boot-starter`。
 

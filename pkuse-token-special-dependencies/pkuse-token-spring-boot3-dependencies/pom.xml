@@ -34,6 +34,13 @@
                 <version>${springboot3.version}</version>
             </dependency>
 
+            <!-- spring-boot-autoconfigure -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-autoconfigure</artifactId>
+                <version>${springboot3.version}</version>
+            </dependency>
+
             <!-- spring-boot-starter-web -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
