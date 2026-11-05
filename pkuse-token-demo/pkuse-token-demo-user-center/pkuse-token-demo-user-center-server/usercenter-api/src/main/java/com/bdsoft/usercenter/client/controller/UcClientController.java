@@ -3,6 +3,7 @@ package com.bdsoft.usercenter.client.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bdsoft.pkusetoken.util.PkuseResult;
 import com.bdsoft.usercenter.common.annotation.OperLog;
+import com.bdsoft.usercenter.common.pojo.PageData;
 import com.bdsoft.usercenter.client.dto.ClientQueryDTO;
 import com.bdsoft.usercenter.client.dto.ClientSaveDTO;
 import com.bdsoft.usercenter.client.po.UcClient;
@@ -47,11 +48,7 @@ public class UcClientController {
         List<ClientVO> records = page.getRecords().stream().map(ClientVO::from).toList();
         // 补充「已授权用户数」（批量查询，避免逐行查询）
         fillAuthorizedUserCount(records);
-        return PkuseResult.ok()
-                .set("total", page.getTotal())
-                .set("current", page.getCurrent())
-                .set("size", page.getSize())
-                .setData(records);
+        return PkuseResult.ok().setData(PageData.of(records, page.getTotal(), page.getCurrent(), page.getSize()));
     }
 
     /** 查询全部应用 */

@@ -58,6 +58,9 @@ public class UcUser extends AbstractAuditPO {
     /** 角色：admin=管理员 / user=普通用户 */
     private String role;
 
+    /** 所属组织 ID（uc_org_unit.id 逻辑外键，不建约束；为空表示未归属） */
+    private String orgId;
+
     /** 状态：0=禁用 / 1=启用 */
     private Integer status;
 
@@ -148,6 +151,14 @@ public class UcUser extends AbstractAuditPO {
         this.role = role;
     }
 
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
+    }
+
     public Integer getStatus() {
         return status;
     }
@@ -213,6 +224,7 @@ public class UcUser extends AbstractAuditPO {
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", role='" + role + '\'' +
+                ", orgId='" + orgId + '\'' +
                 ", status=" + status +
                 ", remark='" + remark + '\'' +
                 ", lastLoginTime=" + lastLoginTime +

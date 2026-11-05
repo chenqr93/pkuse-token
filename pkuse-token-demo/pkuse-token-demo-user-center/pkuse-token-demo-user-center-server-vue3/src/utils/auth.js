@@ -10,6 +10,7 @@
  */
 const TOKEN_KEY = 'user-center-token'
 const USER_KEY = 'user-center-user'
+const ROLES_KEY = 'user-center-roles'
 
 export function getToken() {
   return localStorage.getItem(TOKEN_KEY) || ''
@@ -31,16 +32,29 @@ export function setStoredUser(user) {
   localStorage.setItem(USER_KEY, JSON.stringify(user || null))
 }
 
-/** 当前登录用户是否系统管理员（admin 可维护用户与应用） */
-export function isAdmin() {
-  const user = getStoredUser()
-  return !!user && user.role === 'admin'
+/** 当前登录用户的平台角色（用户信息与角色拆分：角色经 /api/auth/my-roles 单独获取） */
+export function getStoredRoles() {
+  try {
+    return JSON.parse(localStorage.getItem(ROLES_KEY) || '[]')
+  } catch (e) {
+    return []
+  }
 }
 
-/** 保存登录态（token + 用户信息 + Cookie） */
-export function saveLoginState(token, user) {
+export function setStoredRoles(roles) {
+  localStorage.setItem(ROLES_KEY, JSON.stringify(roles || []))
+}
+
+/** 当前登录用户是否系统管理员（admin 可维护用户与应用） */
+export function isAdmin() {
+  return getStoredRoles().includes('admin')
+}
+
+/** 保存登录态（token + 用户信息 + 平台角色 + Cookie） */
+export function saveLoginState(token, user, roles) {
   setToken(token)
   setStoredUser(user)
+  setStoredRoles(roles)
   syncTokenCookie(token)
 }
 
@@ -48,6 +62,7 @@ export function saveLoginState(token, user) {
 export function clearLoginState() {
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+  localStorage.removeItem(ROLES_KEY)
   // 过期 cookie（后端退出登录时也会清理）
   document.cookie = 'satoken=; path=/; max-age=0'
 }

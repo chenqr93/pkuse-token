@@ -11,10 +11,18 @@
           <el-icon><Odometer /></el-icon>
           <span>工作台</span>
         </el-menu-item>
-        <!-- 用户管理、应用管理仅系统管理员可见 -->
+        <!-- 用户管理、组织管理、应用管理仅系统管理员可见 -->
         <el-menu-item v-if="isAdmin" index="/user">
           <el-icon><User /></el-icon>
           <span>用户管理</span>
+        </el-menu-item>
+        <el-menu-item v-if="isAdmin" index="/org">
+          <el-icon><OfficeBuilding /></el-icon>
+          <span>组织架构</span>
+        </el-menu-item>
+        <el-menu-item v-if="isAdmin" index="/region">
+          <el-icon><MapLocation /></el-icon>
+          <span>区划管理</span>
         </el-menu-item>
         <el-menu-item v-if="isAdmin" index="/client">
           <el-icon><Grid /></el-icon>
@@ -47,8 +55,8 @@
           <span class="user-info">
             <el-avatar :size="28" class="avatar">{{ avatarText }}</el-avatar>
             <span class="username">{{ displayName }}</span>
-            <el-tag v-if="user.role" size="small" :type="user.role === 'admin' ? 'danger' : 'info'">
-              {{ user.role === 'admin' ? '管理员' : '普通用户' }}
+            <el-tag size="small" :type="isAdmin ? 'danger' : 'info'">
+              {{ isAdmin ? '管理员' : '普通用户' }}
             </el-tag>
             <el-icon><ArrowDown /></el-icon>
           </span>
@@ -79,7 +87,7 @@
       <el-descriptions :column="1" border>
         <el-descriptions-item label="登录账号">{{ user.username }}</el-descriptions-item>
         <el-descriptions-item label="昵称">{{ user.nickname }}</el-descriptions-item>
-        <el-descriptions-item label="角色">{{ user.role === 'admin' ? '管理员' : '普通用户' }}</el-descriptions-item>
+        <el-descriptions-item label="角色">{{ isAdmin ? '管理员' : '普通用户' }}</el-descriptions-item>
         <el-descriptions-item label="邮箱">{{ user.email || '-' }}</el-descriptions-item>
         <el-descriptions-item label="手机号">{{ user.phone || '-' }}</el-descriptions-item>
         <el-descriptions-item label="最后登录">{{ formatTime(user.lastLoginTime) }}</el-descriptions-item>
@@ -93,11 +101,11 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Key, Odometer, User, Grid, Document, Memo, Setting, Lock,
+  Key, Odometer, User, OfficeBuilding, MapLocation, Grid, Document, Memo, Setting, Lock,
   ArrowDown, InfoFilled, SwitchButton
 } from '@element-plus/icons-vue'
 import { authApi } from '../api'
-import { clearLoginState, getStoredUser, isAdmin as isAdminUser, setStoredUser } from '../utils/auth'
+import { clearLoginState, getStoredUser, isAdmin as isAdminUser, setStoredRoles, setStoredUser } from '../utils/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -105,22 +113,29 @@ const router = useRouter()
 const user = ref(getStoredUser() || {})
 const profileVisible = ref(false)
 
-const isAdmin = computed(() => isAdminUser() || user.value.role === 'admin')
+const isAdmin = computed(() => isAdminUser())
 
 const activeMenu = computed(() => route.path)
 const currentTitle = computed(() => route.meta.title || '用户中心')
 const displayName = computed(() => user.value.nickname || user.value.username || '未登录')
 const avatarText = computed(() => (displayName.value || 'U').charAt(0))
-const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:9000`)
+const ssoServerUrl = computed(() => window.location.origin)
 
 onMounted(async () => {
-  // 拉取最新的当前用户信息，保持顶栏信息准确
+  // 拉取最新的当前用户信息与平台角色，保持顶栏信息准确
+  // （用户信息与角色拆分：me 为纯身份信息，角色经 my-roles 单独获取）
   try {
     const res = await authApi.me()
     user.value = res.data || {}
     setStoredUser(user.value)
   } catch (e) {
     // 401 已由拦截器统一处理
+  }
+  try {
+    const rolesRes = await authApi.myRoles()
+    setStoredRoles(rolesRes.data || [])
+  } catch (e) {
+    // 忽略：沿用本地缓存的角色
   }
 })
 

@@ -259,8 +259,8 @@ async function loadData() {
       clientName: query.clientName || undefined,
       status: query.status === null || query.status === '' ? undefined : query.status
     })
-    records.value = res.data || []
-    total.value = res.total || 0
+    records.value = res.data?.records || []
+    total.value = res.data?.total || 0
   } catch (e) {
     // 错误提示已由 axios 拦截器统一处理
   } finally {

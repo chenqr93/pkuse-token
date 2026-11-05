@@ -1,7 +1,9 @@
 # 四种对接模式客户端 Demo（SSO Client 1~5）
 
 本目录下的 `client1`~`client4` 后端与 `client1-vue3`~`client4-vue3` 前端，分别演示 Pkuse-Token 单点登录的四种对接模式；
-`client5` 是**模式三（跨域 + 跨 Redis）的第二实例**，演示同一模式下接入多个应用：
+> **改名说明（2026-10-30）**：原 `client5`（模式三第二实例 + magic-api）已更名为 **接口快速开发平台** demo（仍在本目录下）：
+> 后端 `pkuse-token-demo-api-platform-server`、前端 `pkuse-token-demo-api-platform-vue3`；SSO 应用标识仍为 `sso-client5`（数据库密钥/授权绑定不变），部署路径 `http://192.168.1.65:8098/api-platform/`。
+`client5` 是 **模式三（跨域 + 跨 Redis）的第二实例**，演示同一模式下接入多个应用：
 
 | 客户端 | 对接模式 | 域关系 | 会话存储 | ticket 校验方式 | 后端 | 前端 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -89,7 +91,7 @@ cd pkuse-token-demo-user-center-client5-vue3 && npm install && npm run dev
 
 各客户端首页可查看登录状态、`loginId`、token，并可：
 
-- **获取账号资料**：客户端后端 → 认证中心 `userinfo` 消息（认证中心返回 `id/username/nickname/role`）；
+- **获取账号资料**：客户端后端 → 认证中心 `userinfo` 消息（认证中心返回纯身份信息 `id/username/nickname`，**不含角色**——应用内角色由应用经授权中心客户端 starter 调 `/open/authz/roles` 按客户端获取）；
 - **单应用注销**：只退出本应用，不影响其它端；
 - **单点注销**：通知认证中心注销**当前设备**在各端（含其它客户端）的会话——
   同一账号在**其它设备 / 其它浏览器**上的登录不受影响（按登录设备 `deviceId` 精确下线）；
@@ -145,3 +147,21 @@ cd pkuse-token-demo-user-center-client5-vue3 && npm install && npm run dev
 8. **client5 与 client3 是同模式的不同应用**：二者代码结构一致，差异只在
    端口（9005/5178）、应用标识（`sso-client5`）、密钥与 Redis 库（db7）；
    旧库接入 client5 需执行 `db/upgrade-v9-client5.sql` 注册应用（新库 init.sql 已内置）。
+
+## 六、client3 的权限层接入（授权中心）
+
+client3 除 SSO 登录层（上表模式三）外，还演示了**授权中心权限层**接入（两层解耦）：
+
+- **后端**：引入 `pkuse-token-auth-center-client-spring-boot-starter` + 配置 `auth-center.client.*`
+  （base-url 指向授权中心 9010，client/secret-key 与用户中心登记一致）——
+  starter 自动完成签名调用 `/open/authz/*`、按 loginId 缓存权限（TTL 60s，授权中心故障 30 分钟内沿用陈旧数据、
+  超窗 fail-closed）、适配 `StpInterface`（`StpUtil.checkPermission` / `@PkuseCheckPermission` 开箱即用）、
+  暴露 `/authz/menus` 与 `/authz/perms` 给前端；`AuthzDemoController` 提供受 `sys:user:del` /
+  `sys:user:edit` 权限码保护的演示接口。
+- **前端**：首页「授权中心 · 动态菜单与按钮权限」区块——动态渲染授权中心分发的菜单树（zhangsan 看不到
+  隐藏页与删除按钮，admin 全量可见），按钮按权限码显隐，受保护接口后端再校验（403 双重防线）。
+- **演示要点**：权限数据在授权中心「菜单管理/角色管理/用户授权」维护，client3 一分钟缓存内生效；
+  **停掉用户中心后 client3 仍能拉取权限**（分发链路只依赖授权中心本地库与注册表缓存）。
+
+接入步骤与手动（NoSdk）接入契约见
+[《应用接入指南》](pkuse-token-auth-center-client-spring-boot-starter/README.md)。

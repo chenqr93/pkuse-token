@@ -16,6 +16,7 @@ import com.bdsoft.usercenter.auth.service.LoginAttemptService;
 import com.bdsoft.usercenter.config.service.UcConfigService;
 import com.bdsoft.usercenter.authz.service.UcUserClientService;
 import com.bdsoft.usercenter.device.service.UcUserDeviceService;
+import com.bdsoft.usercenter.org.service.UcOrgUnitService;
 import com.bdsoft.usercenter.user.service.UcUserService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,9 @@ public class UcUserServiceImpl extends ServiceImpl<UcUserMapper, UcUser> impleme
     @Resource
     private UcConfigService configService;
 
+    @Resource
+    private UcOrgUnitService orgUnitService;
+
     @Override
     public Page<UcUser> pageQuery(UserQueryDTO query) {
         LambdaQueryWrapper<UcUser> wrapper = new LambdaQueryWrapper<UcUser>()
@@ -50,6 +54,7 @@ public class UcUserServiceImpl extends ServiceImpl<UcUserMapper, UcUser> impleme
                 .like(hasText(query.getUsername()), UcUser::getUsername, query.getUsername())
                 .like(hasText(query.getNickname()), UcUser::getNickname, query.getNickname())
                 .eq(query.getStatus() != null, UcUser::getStatus, query.getStatus())
+                .eq(hasText(query.getOrgId()), UcUser::getOrgId, query.getOrgId())
                 .orderByAsc(UcUser::getId);
         return this.page(new Page<>(query.currentOrDefault(), query.sizeOrDefault()), wrapper);
     }
@@ -106,6 +111,7 @@ public class UcUserServiceImpl extends ServiceImpl<UcUserMapper, UcUser> impleme
         user.setEmail(param.getEmail());
         user.setPhone(param.getPhone());
         user.setRole(hasText(param.getRole()) ? param.getRole() : UcUser.ROLE_USER);
+        user.setOrgId(normalizeOrgId(param.getOrgId()));
         user.setStatus(param.getStatus() == null ? UcUser.STATUS_ENABLED : param.getStatus());
         user.setRemark(param.getRemark());
         // 首次登录强制修改密码（规则配置）：新增用户需在下次登录时修改密码
@@ -142,7 +148,20 @@ public class UcUserServiceImpl extends ServiceImpl<UcUserMapper, UcUser> impleme
         db.setRole(hasText(param.getRole()) ? param.getRole() : db.getRole());
         db.setStatus(param.getStatus() == null ? db.getStatus() : param.getStatus());
         db.setRemark(param.getRemark());
+        // 归属组织：有值时校验存在并随主更新写入（为空表示清空归属，见下方显式置空）
+        String orgId = normalizeOrgId(param.getOrgId());
+        if (orgId != null) {
+            db.setOrgId(orgId);
+        }
         this.updateById(db);
+        // 清空归属需显式 set(null)（updateById 忽略 null 字段）
+        if (orgId == null && hasText(db.getOrgId())) {
+            this.update(new LambdaUpdateWrapper<UcUser>()
+                    .eq(UcUser::getId, db.getId())
+                    .set(UcUser::getOrgId, null)
+                    .set(UcUser::getUpdateTime, LocalDateTime.now()));
+            db.setOrgId(null);
+        }
         return db;
     }
 
@@ -222,6 +241,14 @@ public class UcUserServiceImpl extends ServiceImpl<UcUserMapper, UcUser> impleme
 
     private static boolean hasText(String text) {
         return text != null && !text.isBlank();
+    }
+
+    /** 组织归属归一化：为空返回 null（未归属）；非空时校验组织存在（不存在抛业务异常） */
+    private String normalizeOrgId(String orgId) {
+        if (!hasText(orgId)) {
+            return null;
+        }
+        return orgUnitService.getByIdOrThrow(orgId).getId();
     }
 
 }

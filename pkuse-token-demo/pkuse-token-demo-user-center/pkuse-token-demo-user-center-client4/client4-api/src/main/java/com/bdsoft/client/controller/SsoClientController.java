@@ -45,18 +45,16 @@ public class SsoClientController {
         this.nonceCache = nonceCache;
     }
 
-    /** 当前是否登录（前端调用，token 通过请求头/参数 satoken 传递） */
+    /** 当前是否登录（前端调用，token 通过请求头/参数 satoken 传递；data={isLogin,loginId,token}） */
     @GetMapping("/sso/isLogin")
     public Map<String, Object> isLogin(HttpServletRequest request) {
         String token = readToken(request);
         Object loginId = sessionStore.getLoginId(token);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 200);
-        result.put("msg", "ok");
-        result.put("isLogin", loginId != null);
-        result.put("loginId", loginId);
-        result.put("token", token);
-        return result;
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("isLogin", loginId != null);
+        data.put("loginId", loginId);
+        data.put("token", token);
+        return ok("ok", data);
     }
 
     /** 返回认证中心授权地址（前端跳转过去完成统一登录） */
@@ -65,14 +63,10 @@ public class SsoClientController {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("client", properties.getClientId());
         params.put("redirect", clientLoginUrl);
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 200);
-        result.put("msg", "ok");
-        result.put("data", SsoRequestUtil.buildUrl(properties.authUrl(), params));
-        return result;
+        return ok("ok", SsoRequestUtil.buildUrl(properties.authUrl(), params));
     }
 
-    /** 根据 ticket 登录本应用：调用认证中心 checkTicket 换取 loginId，并建立本地会话 */
+    /** 根据 ticket 登录本应用：调用认证中心 checkTicket 换取 loginId，并建立本地会话（data={token,loginId}） */
     @GetMapping("/sso/doLoginByTicket")
     public Map<String, Object> doLoginByTicket(String ticket) {
         Map<String, String> params = new LinkedHashMap<>();
@@ -89,12 +83,10 @@ public class SsoClientController {
             // 记录认证中心侧该会话的设备 id（单点注销时用于按设备过滤，避免误杀其它设备会话）
             String deviceId = pushResult.get("deviceId") == null ? null : String.valueOf(pushResult.get("deviceId"));
             String token = sessionStore.create(loginId, deviceId);
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("code", 200);
-            result.put("msg", "登录成功");
-            result.put("data", token);
-            result.put("loginId", loginId);
-            return result;
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("token", token);
+            data.put("loginId", loginId);
+            return ok("登录成功", data);
         } catch (Exception e) {
             return error("调用认证中心失败：" + e.getMessage());
         }
@@ -104,10 +96,7 @@ public class SsoClientController {
     @GetMapping("/sso/logoutByAlone")
     public Map<String, Object> logoutByAlone(HttpServletRequest request) {
         sessionStore.remove(readToken(request));
-        Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 200);
-        result.put("msg", "已退出本应用");
-        return result;
+        return ok("已退出本应用", null);
     }
 
     /** 单点注销：调用认证中心 signout 消息，随后回到 back 地址 */
@@ -134,12 +123,12 @@ public class SsoClientController {
         response.sendRedirect(back == null || back.isBlank() ? "/" : back);
     }
 
-    /** 获取账号资料：调用认证中心 userinfo 消息 */
+    /** 获取账号资料：调用认证中心 userinfo 消息（认证中心返回纯身份信息，不含角色） */
     @GetMapping("/sso/myInfo")
     public Map<String, Object> myInfo(HttpServletRequest request) {
         Object loginId = sessionStore.getLoginId(readToken(request));
         if (loginId == null) {
-            return error("尚未登录，无法获取");
+            return error(401, "尚未登录，无法获取");
         }
         Map<String, String> params = new LinkedHashMap<>();
         params.put("loginId", String.valueOf(loginId));
@@ -168,10 +157,7 @@ public class SsoClientController {
             // 单点注销回调：清除该账号在本应用的会话（带 deviceId 时只清除该设备的会话）
             Object loginId = params.get("loginId");
             int count = sessionStore.removeByLoginId(loginId, params.get("deviceId"));
-            Map<String, Object> result = new LinkedHashMap<>();
-            result.put("code", 200);
-            result.put("msg", "账号 loginId=" + loginId + " 在本应用注销成功（清理会话 " + count + " 个）");
-            return result;
+            return ok("账号 loginId=" + loginId + " 在本应用注销成功（清理会话 " + count + " 个）", null);
         }
         return error("未知消息类型：" + msgType);
     }
@@ -202,9 +188,24 @@ public class SsoClientController {
         return code instanceof Number number && number.intValue() == 200;
     }
 
-    private static Map<String, Object> error(String msg) {
+    /** 统一信封成功构建（code=200） */
+    private static Map<String, Object> ok(String msg, Object data) {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("code", 500);
+        result.put("code", 200);
+        result.put("msg", msg);
+        result.put("data", data);
+        return result;
+    }
+
+    /** 统一信封失败构建（默认 code=500） */
+    private static Map<String, Object> error(String msg) {
+        return error(500, msg);
+    }
+
+    /** 统一信封失败构建（自定义业务码，如 401=未登录） */
+    private static Map<String, Object> error(int code, String msg) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("code", code);
         result.put("msg", msg);
         result.put("data", null);
         return result;

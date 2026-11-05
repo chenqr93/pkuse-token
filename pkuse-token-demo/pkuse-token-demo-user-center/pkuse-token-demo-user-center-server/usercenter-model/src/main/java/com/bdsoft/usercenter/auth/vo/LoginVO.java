@@ -1,6 +1,5 @@
 package com.bdsoft.usercenter.auth.vo;
 
-import com.bdsoft.usercenter.user.vo.UserVO;
 import java.io.Serializable;
 
 /**
@@ -13,8 +12,8 @@ public class LoginVO implements Serializable {
     /** token 值：前端存 localStorage，请求时放入 satoken 请求头 */
     private String token;
 
-    /** 登录用户信息 */
-    private UserVO user;
+    /** 登录用户信息（纯身份，不含角色；平台角色另走 /api/auth/my-roles） */
+    private MeVO user;
 
     /** 是否需要修改密码（规则配置 - 首次登录强制修改密码）：前端据此引导用户先修改密码 */
     private Boolean mustChangePassword;
@@ -27,11 +26,11 @@ public class LoginVO implements Serializable {
         this.token = token;
     }
 
-    public UserVO getUser() {
+    public MeVO getUser() {
         return user;
     }
 
-    public void setUser(UserVO user) {
+    public void setUser(MeVO user) {
         this.user = user;
     }
 

@@ -42,6 +42,13 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-codec</artifactId>
         </dependency>
+
+        <!-- 授权中心客户端 SDK：签名拉取菜单/权限码/角色（动态菜单 + 按钮/角色级鉴权），自动适配 StpInterface -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-auth-center-client-spring-boot-starter</artifactId>
+            <version>${pkuse-token.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

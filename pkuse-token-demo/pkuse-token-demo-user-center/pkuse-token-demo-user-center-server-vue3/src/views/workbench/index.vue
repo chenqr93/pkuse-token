@@ -7,7 +7,7 @@
         <div class="welcome-text">
           <div class="welcome-title">
             欢迎回来，{{ displayName }}！
-            <el-tag v-if="currentUser.role" size="small" :type="isAdmin ? 'danger' : 'info'">
+            <el-tag size="small" :type="isAdmin ? 'danger' : 'info'">
               {{ isAdmin ? '系统管理员' : '普通用户' }}
             </el-tag>
           </div>
@@ -183,9 +183,9 @@ const overview = ref({})
 const myApps = ref([])
 const currentUser = ref(getStoredUser() || {})
 
-const isAdmin = computed(() => isAdminUser() || currentUser.value.role === 'admin')
+const isAdmin = computed(() => isAdminUser())
 const displayName = computed(() => currentUser.value.nickname || currentUser.value.username || '用户')
-const ssoServerUrl = computed(() => `${window.location.protocol}//${window.location.hostname}:9000`)
+const ssoServerUrl = computed(() => window.location.origin)
 const registeredClients = computed(() => overview.value.registeredClients || [])
 
 onMounted(loadData)

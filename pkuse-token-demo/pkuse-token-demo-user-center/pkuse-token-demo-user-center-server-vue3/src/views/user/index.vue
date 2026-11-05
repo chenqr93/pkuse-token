@@ -16,6 +16,19 @@
               <el-option label="禁用" :value="0" />
             </el-select>
           </el-form-item>
+          <el-form-item label="所属组织">
+            <el-tree-select
+              v-model="query.orgId"
+              :data="orgTree"
+              :props="{ label: 'orgName', children: 'children' }"
+              node-key="id"
+              check-strictly
+              clearable
+              filterable
+              placeholder="全部"
+              style="width: 200px"
+            />
+          </el-form-item>
           <el-form-item>
             <el-button type="primary" @click="onSearch">
               <el-icon><Search /></el-icon>查询
@@ -49,6 +62,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="nickname" label="昵称" min-width="110" show-overflow-tooltip />
+        <el-table-column label="所属组织" min-width="150" show-overflow-tooltip>
+          <template #default="{ row }">{{ row.orgName || '-' }}</template>
+        </el-table-column>
         <el-table-column label="角色" width="90">
           <template #default="{ row }">
             <el-tag size="small" :type="row.role === 'admin' ? 'danger' : 'info'">
@@ -162,6 +178,19 @@
             <el-option label="普通用户" value="user" />
             <el-option label="管理员" value="admin" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="所属组织" prop="orgId">
+          <el-tree-select
+            v-model="form.orgId"
+            :data="orgTree"
+            :props="{ label: 'orgName', children: 'children' }"
+            node-key="id"
+            check-strictly
+            clearable
+            filterable
+            placeholder="不选择则未归属组织"
+            style="width: 100%"
+          />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="form.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="禁用" />
@@ -294,7 +323,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { clientApi, configApi, userApi } from '../../api'
+import { clientApi, configApi, orgApi, userApi } from '../../api'
 
 const loading = ref(false)
 const saving = ref(false)
@@ -302,7 +331,10 @@ const togglingId = ref(null)
 const records = ref([])
 const total = ref(0)
 
-const query = reactive({ current: 1, size: 10, username: '', nickname: '', status: null })
+// 组织架构树（筛选与表单的归属组织选择共用，进入页面加载一次）
+const orgTree = ref([])
+
+const query = reactive({ current: 1, size: 10, username: '', nickname: '', status: null, orgId: null })
 
 const dialogVisible = ref(false)
 const formRef = ref(null)
@@ -343,6 +375,7 @@ const form = reactive({
   email: '',
   phone: '',
   role: 'user',
+  orgId: null,
   status: 1,
   remark: '',
   createTime: null
@@ -366,7 +399,19 @@ onMounted(async () => {
   } catch (e) {
     // 忽略：提示信息获取失败不影响用户管理
   }
+  // 组织架构树用于筛选与表单选择（失败不影响主流程）
+  await loadOrgTree()
 })
+
+/** 加载组织架构树（筛选下拉 / 表单归属选择共用） */
+async function loadOrgTree() {
+  try {
+    const res = await orgApi.tree()
+    orgTree.value = res.data || []
+  } catch (e) {
+    // 错误提示已由 axios 拦截器统一处理
+  }
+}
 
 async function loadData() {
   loading.value = true
@@ -376,10 +421,11 @@ async function loadData() {
       size: query.size,
       username: query.username || undefined,
       nickname: query.nickname || undefined,
-      status: query.status === null || query.status === '' ? undefined : query.status
+      status: query.status === null || query.status === '' ? undefined : query.status,
+      orgId: query.orgId || undefined
     })
-    records.value = res.data || []
-    total.value = res.total || 0
+    records.value = res.data?.records || []
+    total.value = res.data?.total || 0
   } catch (e) {
     // 错误提示已由 axios 拦截器统一处理
   } finally {
@@ -396,6 +442,7 @@ function onReset() {
   query.username = ''
   query.nickname = ''
   query.status = null
+  query.orgId = null
   onSearch()
 }
 
@@ -418,6 +465,7 @@ function resetForm() {
   form.email = ''
   form.phone = ''
   form.role = 'user'
+  form.orgId = null
   form.status = 1
   form.remark = ''
   form.createTime = null
@@ -437,6 +485,7 @@ function openEdit(row) {
     email: row.email,
     phone: row.phone,
     role: row.role || 'user',
+    orgId: row.orgId || null,
     status: row.status,
     remark: row.remark,
     createTime: row.createTime
@@ -464,6 +513,7 @@ async function onSave() {
         email: form.email,
         phone: form.phone,
         role: form.role,
+        orgId: form.orgId || null,
         status: form.status,
         remark: form.remark
       })
@@ -476,6 +526,7 @@ async function onSave() {
         email: form.email,
         phone: form.phone,
         role: form.role,
+        orgId: form.orgId || null,
         status: form.status,
         remark: form.remark
       })
@@ -670,7 +721,7 @@ async function onSaveBatchGrant() {
     })
     const action = batchGrantMode.value === 'append' ? '追加授权' : '覆盖授权'
     ElMessage.success(
-      `已为 ${res.userCount ?? userIds.length} 个用户${action} ${batchGrantChecked.value.length} 个应用`
+      `已为 ${res.data?.userCount ?? userIds.length} 个用户${action} ${batchGrantChecked.value.length} 个应用`
     )
     batchGrantVisible.value = false
     loadData()

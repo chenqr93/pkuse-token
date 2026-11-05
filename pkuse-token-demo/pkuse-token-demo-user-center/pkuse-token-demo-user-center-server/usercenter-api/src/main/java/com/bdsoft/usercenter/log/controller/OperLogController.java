@@ -6,6 +6,7 @@ import com.bdsoft.usercenter.log.dto.OperLogQueryDTO;
 import com.bdsoft.usercenter.log.po.UcOperLog;
 import com.bdsoft.usercenter.log.service.OperLogService;
 import com.bdsoft.usercenter.log.vo.OperLogVO;
+import com.bdsoft.usercenter.common.pojo.PageData;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,11 +34,7 @@ public class OperLogController {
     public PkuseResult page(OperLogQueryDTO query) {
         Page<UcOperLog> page = operLogService.pageQuery(query);
         List<OperLogVO> records = page.getRecords().stream().map(OperLogVO::from).toList();
-        return PkuseResult.ok()
-                .set("total", page.getTotal())
-                .set("current", page.getCurrent())
-                .set("size", page.getSize())
-                .setData(records);
+        return PkuseResult.ok().setData(PageData.of(records, page.getTotal(), page.getCurrent(), page.getSize()));
     }
 
 }

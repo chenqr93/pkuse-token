@@ -16,7 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
  * <pre>
  *   1、/api/** 下的接口统一要求登录（登录/登出接口除外），未登录抛出 NotLoginException，
  *      由 GlobalExceptionHandler 转换为 code=401 返回，前端跳转登录页；
- *   2、管理接口（用户管理、应用管理、日志、规则配置、工作台总览）仅系统管理员（role=admin）可访问，
+ *   2、管理接口（用户管理、组织管理、区划管理、应用管理、日志、规则配置、工作台总览）仅系统管理员（role=admin）可访问，
  *      普通用户访问抛出 NotRoleException，转换为 code=403 返回；
  *   3、「需修改密码」拦截（规则配置 - 首次登录强制修改密码）：处于该状态的账号，
  *      除修改密码等必要接口外一律返回 code=426，前端引导先完成改密。
@@ -27,7 +27,8 @@ public class SaTokenConfigure implements WebMvcConfigurer {
 
     /** 管理接口路径（仅系统管理员） */
     private static final String[] ADMIN_PATTERNS = {
-            "/api/user/**", "/api/client/**", "/api/log/**", "/api/config/**", "/api/dashboard/overview"};
+            "/api/user/**", "/api/org/**", "/api/region/**", "/api/client/**",
+            "/api/log/**", "/api/config/**", "/api/dashboard/overview"};
 
     /** 置为「需修改密码」时仍可访问的接口（登录前接口 + 改密相关） */
     private static final String[] MUST_CHANGE_PASSWORD_EXCLUDES = {

@@ -15,6 +15,9 @@ public class UserQueryDTO extends PageQueryDTO {
     /** 状态：0=禁用 / 1=启用（可空表示全部） */
     private Integer status;
 
+    /** 所属组织 ID（可空表示全部；精确匹配该组织，不含其下级组织的用户） */
+    private String orgId;
+
     public String getUsername() {
         return username;
     }
@@ -39,12 +42,21 @@ public class UserQueryDTO extends PageQueryDTO {
         this.status = status;
     }
 
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
+    }
+
     @Override
     public String toString() {
         return "UserQueryDTO{" + super.toString() +
                 ", username='" + username + '\'' +
                 ", nickname='" + nickname + '\'' +
                 ", status=" + status +
+                ", orgId='" + orgId + '\'' +
                 '}';
     }
 }

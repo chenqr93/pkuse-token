@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 /**
  * SSO 客户端2：模式二对接（跨域 + 同 Redis）
  *
@@ -33,13 +36,14 @@ public class SsoClientController {
         return PkuseSsoClientProcessor.instance.dister();
     }
 
-    /** 当前是否登录（前端调用，token 通过请求头 satoken 传递） */
+    /** 当前是否登录（前端调用，token 通过请求头 satoken 传递；data={isLogin,loginId,token}） */
     @GetMapping("/sso/isLogin")
     public PkuseResult isLogin() {
-        return PkuseResult.ok()
-                .set("isLogin", StpUtil.isLogin())
-                .set("loginId", StpUtil.getLoginIdDefaultNull())
-                .set("token", StpUtil.getTokenValue());
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("isLogin", StpUtil.isLogin());
+        data.put("loginId", StpUtil.getLoginIdDefaultNull());
+        data.put("token", StpUtil.getTokenValue());
+        return PkuseResult.ok().setData(data);
     }
 
     /** 返回认证中心授权地址（前端跳转过去完成统一登录） */
@@ -65,11 +69,11 @@ public class SsoClientController {
         return PkuseResult.ok("已退出本应用");
     }
 
-    /** 获取账号资料：本应用后端 → 认证中心 userinfo 消息 */
+    /** 获取账号资料：本应用后端 → 认证中心 userinfo 消息（返回纯身份信息，不含角色） */
     @GetMapping("/sso/myInfo")
     public PkuseResult myInfo() {
         if (!StpUtil.isLogin()) {
-            return PkuseResult.error("尚未登录，无法获取");
+            return PkuseResult.get(PkuseResult.CODE_NOT_LOGIN, "尚未登录，无法获取", null);
         }
         PkuseSsoMessage message = new PkuseSsoMessage();
         message.setType("userinfo");

@@ -19,8 +19,8 @@ import com.bdsoft.usercenter.config.service.UcConfigService;
 import com.bdsoft.usercenter.security.Sm2KeyManager;
 import com.bdsoft.usercenter.auth.vo.DeviceCodeVO;
 import com.bdsoft.usercenter.auth.vo.LoginVO;
+import com.bdsoft.usercenter.auth.vo.MeVO;
 import com.bdsoft.usercenter.auth.vo.PasswordRuleVO;
-import com.bdsoft.usercenter.user.vo.UserVO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +29,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 登录认证接口
@@ -40,7 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
  *   /api/auth/password-rule   当前生效的密码规则（改密页面提示）
  *   /api/auth/change-password 修改当前登录用户的密码
  *   /api/auth/logout          退出登录
- *   /api/auth/me              当前登录用户
+ *   /api/auth/me              当前登录用户（纯身份信息，不含角色）
+ *   /api/auth/my-roles        当前登录用户的平台角色（仅用户中心自己控制台消费）
  * </pre>
  *
  * <p> 入参为 DTO、出参为 VO：实体不进入接口层。 </p>
@@ -90,10 +95,11 @@ public class AuthController {
     /** 获取 SM2 公钥（国密）：前端使用该公钥加密登录密码后提交（encrypted=true） */
     @GetMapping("/public-key")
     public PkuseResult publicKey() {
-        return PkuseResult.ok()
-                .set("algorithm", "SM2")
-                .set("mode", "C1C3C2")
-                .setData(sm2KeyManager.getPublicKeyHex());
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("algorithm", "SM2");
+        data.put("mode", "C1C3C2");
+        data.put("publicKey", sm2KeyManager.getPublicKeyHex());
+        return PkuseResult.ok().setData(data);
     }
 
     /** 新设备登录：向账号绑定手机号发送验证码（参数为登录时返回的 verifyToken） */
@@ -150,17 +156,32 @@ public class AuthController {
         return PkuseResult.ok("已退出登录");
     }
 
-    /** 获取当前登录用户信息 */
+    /** 获取当前登录用户信息（纯身份信息，不含角色） */
     @GetMapping("/me")
     public PkuseResult me() {
-        return PkuseResult.ok().setData(UserVO.from(authService.currentUser()));
+        return PkuseResult.ok().setData(MeVO.from(authService.currentUser()));
+    }
+
+    /**
+     * 当前登录用户的平台角色（仅用户中心自己控制台消费）
+     *
+     * <p> 用户信息与角色拆分后，前端管理端的角色判断（如管理菜单显隐）改走本接口； </p>
+     * <p> 各应用内的角色请经授权中心客户端 starter 按客户端获取，勿依赖平台角色。 </p>
+     */
+    @GetMapping("/my-roles")
+    public PkuseResult myRoles() {
+        UcUser user = authService.currentUser();
+        List<String> roles = (user.getRole() == null || user.getRole().isBlank())
+                ? List.of()
+                : List.of(user.getRole());
+        return PkuseResult.ok().setData(roles);
     }
 
     /** 登录结果 → 视图对象（token 值前端存 localStorage，请求时放入 satoken 请求头） */
     private static LoginVO toLoginVO(LoginResultBO result) {
         LoginVO vo = new LoginVO();
         vo.setToken(StpUtil.getTokenValue());
-        vo.setUser(UserVO.from(result.getUser()));
+        vo.setUser(MeVO.from(result.getUser()));
         vo.setMustChangePassword(result.getMustChangePassword());
         return vo;
     }

@@ -114,11 +114,11 @@ async function handleLoginPage() {
     }
 
     if (ticket) {
-      // 从认证中心带 ticket 回跳：换取本应用 token
+      // 从认证中心带 ticket 回跳：换取本应用 token（统一信封：data={token,loginId}）
       loginTip.value = '正在校验 ticket 并登录…'
       const res = await ssoApi.doLoginByTicket(ticket)
       if (res.code === 200) {
-        setToken(res.data)
+        setToken(res.data?.token || res.data)
         window.location.replace('/')
         return
       }
@@ -146,9 +146,10 @@ async function handleLoginPage() {
 async function refresh() {
   try {
     const res = await ssoApi.isLogin()
-    isLogin.value = !!res.isLogin
-    loginId.value = res.loginId
-    token.value = res.token || getToken()
+    // isLogin 统一信封返回：业务字段在 data 内（data={isLogin,loginId,token}）
+    isLogin.value = !!res.data?.isLogin
+    loginId.value = res.data?.loginId
+    token.value = res.data?.token || getToken()
     if (!isLogin.value) {
       userInfo.value = null
     }

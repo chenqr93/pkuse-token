@@ -1,0 +1,42 @@
+# ===================================================================
+#  开发环境配置（默认打包环境：mvn package 或 mvn package -P dev）
+# ===================================================================
+server:
+  port: 9010
+
+spring:
+  # ------------------- 数据源：独立库 PKUSE_TOKEN_AUTH_CENTER（p6spy 代理）-------------------
+  # 与用户中心库 PKUSE_TOKEN_USER_CENTER 同实例不同库，生产可分库分机部署
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:kingbase8://192.168.1.77:54321/PKUSE_TOKEN_AUTH_CENTER
+    username: DEV_USER_CENTER
+    password: Beid@s0ft
+
+  # ------------------- Redis：ticket 模式下的本地会话库（db8）-------------------
+  # 独立于用户中心 db5、client3 db6、client5 db7；
+  # 同时用于：开放接口 nonce 防重放、应用注册表快照、用户信息缓存
+  data:
+    redis:
+      database: 8
+      host: 192.168.1.75
+      port: 6379
+      password: bds0ft@2025
+      timeout: 10s
+    lettuce:
+      pool:
+        max-active: 200
+        max-wait: -1ms
+        max-idle: 10
+        min-idle: 0
+
+# ------------------- simple 模式（模式一式直通）配置示例 -------------------
+# ★ 切换步骤（三处）：① auth-center.sso.integration-mode 改 simple；② sa-token.token-name 改 satoken；
+#   ③ 打开下方 alone-redisson（指向用户中心会话 Redis db5），并将 spring.data.redis 保留为缓存用途即可。
+# sa-token:
+#   alone-redisson:
+#     config: |
+#       singleServerConfig:
+#         address: "redis://192.168.1.75:6379"
+#         password: "bds0ft@2025"
+#         database: 5

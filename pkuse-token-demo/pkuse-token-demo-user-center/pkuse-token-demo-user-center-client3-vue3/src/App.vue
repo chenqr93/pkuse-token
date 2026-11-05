@@ -58,6 +58,70 @@
           </div>
         </section>
 
+        <!-- 授权中心：动态菜单与按钮级鉴权演示 -->
+        <section class="card">
+          <div class="card-title">
+            授权中心 · 动态菜单与按钮权限
+            <button class="btn ghost" style="margin-left: 8px" :disabled="!isLogin" @click="loadAuthz">
+              重新拉取
+            </button>
+          </div>
+          <template v-if="isLogin">
+            <div v-if="authzError" class="alert-error" style="margin-bottom: 10px">
+              <span>{{ authzError }}</span>
+            </div>
+            <p class="muted" style="margin: 6px 0">
+              菜单树与权限码来自授权中心（角色绑定决定可见性）：zhangsan（user 角色）看不到「用户删除」按钮，
+              admin 角色全部可见；隐藏页面（详情）不在导航中但其权限码仍生效。
+            </p>
+
+            <!-- 动态菜单（目录 → 页面，隐藏页不渲染） -->
+            <div class="authz-menu">
+              <div v-for="dir in authzMenus" :key="dir.id" class="authz-dir">
+                <div class="authz-dir-name">📂 {{ dir.menuName }}</div>
+                <div v-for="page in dir.children || []" :key="page.id" class="authz-page">
+                  <span>📄 {{ page.menuName }}</span>
+                  <span class="muted mono" style="font-size: 11px">{{ page.path }}</span>
+                  <span v-if="page.perms" class="badge mono" style="font-size: 11px">{{ page.perms }}</span>
+                </div>
+              </div>
+              <div v-if="!authzMenus.length" class="muted">
+                当前用户在本应用无任何菜单权限（未分配角色或角色未绑定菜单）
+              </div>
+            </div>
+
+            <!-- 权限码集合与按钮显隐 -->
+            <div class="card-title" style="margin-top: 12px">我的权限码</div>
+            <div class="perm-tags">
+              <span v-for="perm in authzPerms" :key="perm" class="badge badge-ok mono">{{ perm }}</span>
+              <span v-if="!authzPerms.length" class="muted">（空）</span>
+            </div>
+
+            <div class="btn-row" style="margin-top: 12px">
+              <button
+                class="btn"
+                :disabled="!isLogin || !hasPerm('sys:user:add')"
+                :title="hasPerm('sys:user:add') ? '' : '无权限码 sys:user:add'"
+                @click="callDemo('add')"
+              >新增（sys:user:add）</button>
+              <button
+                class="btn"
+                :disabled="!isLogin || !hasPerm('sys:user:edit')"
+                :title="hasPerm('sys:user:edit') ? '' : '无权限码 sys:user:edit'"
+                @click="callDemo('edit')"
+              >编辑（sys:user:edit）</button>
+              <button
+                class="btn danger"
+                :disabled="!isLogin || !hasPerm('sys:user:del')"
+                :title="hasPerm('sys:user:del') ? '' : '无权限码 sys:user:del'"
+                @click="callDemo('del')"
+              >删除（sys:user:del）</button>
+            </div>
+            <p v-if="demoMsg" class="muted" style="margin-top: 8px">接口返回：{{ demoMsg }}</p>
+          </template>
+          <p v-else class="muted">登录后展示本应用的动态菜单与按钮权限。</p>
+        </section>
+
         <!-- 账号资料 -->
         <section v-if="userInfo" class="card">
           <div class="card-title">账号资料（来自认证中心 userinfo 消息）</div>
@@ -80,7 +144,7 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import config from './config.js'
-import { ssoApi, setToken, clearToken, getToken } from './api.js'
+import { ssoApi, authzApi, setToken, clearToken, getToken } from './api.js'
 
 const view = ref('home')
 const loginTip = ref('正在跳转统一登录…')
@@ -89,6 +153,12 @@ const isLogin = ref(false)
 const loginId = ref(null)
 const token = ref(getToken())
 const userInfo = ref(null)
+
+// 授权中心：动态菜单 / 权限码 / 演示结果
+const authzMenus = ref([])
+const authzPerms = ref([])
+const authzError = ref('')
+const demoMsg = ref('')
 
 onMounted(async () => {
   // 统一登录回跳页面：/login（可能携带 ticket）
@@ -146,14 +216,60 @@ async function handleLoginPage() {
 async function refresh() {
   try {
     const res = await ssoApi.isLogin()
-    isLogin.value = !!res.isLogin
-    loginId.value = res.loginId
-    token.value = res.token || getToken()
+    // isLogin 统一信封返回：业务字段在 data 内（data={isLogin,loginId,token}）
+    isLogin.value = !!res.data?.isLogin
+    loginId.value = res.data?.loginId
+    token.value = res.data?.token || getToken()
     if (!isLogin.value) {
       userInfo.value = null
+      authzMenus.value = []
+      authzPerms.value = []
+    } else if (!authzMenus.value.length) {
+      loadAuthz()
     }
   } catch (e) {
     errorMsg.value = '请求失败：' + e.message
+  }
+}
+
+/** 拉取授权中心分发的菜单树与权限码（starter 暴露的 /authz/*，直接返回数组） */
+async function loadAuthz() {
+  authzError.value = ''
+  demoMsg.value = ''
+  try {
+    const [menusRes, permsRes] = await Promise.all([authzApi.menus(), authzApi.perms()])
+    if (Array.isArray(menusRes)) {
+      authzMenus.value = menusRes
+    } else if (menusRes.code === 200) {
+      authzMenus.value = menusRes.data || []
+    } else {
+      authzError.value = '菜单拉取失败：' + (menusRes.msg || menusRes.code || '')
+    }
+    if (Array.isArray(permsRes)) {
+      authzPerms.value = permsRes
+    } else if (permsRes.code === 200) {
+      authzPerms.value = permsRes.data || []
+    } else {
+      authzError.value = '权限码拉取失败：' + (permsRes.msg || permsRes.code || '')
+    }
+  } catch (e) {
+    authzError.value = '授权中心接口请求失败：' + e.message
+  }
+}
+
+/** 是否拥有权限码（按钮显隐） */
+function hasPerm(perm) {
+  return authzPerms.value.includes(perm)
+}
+
+/** 调用受保护演示接口（后端 checkPermission；前端隐藏 + 后端 403 双重防线） */
+async function callDemo(action) {
+  demoMsg.value = ''
+  const res = action === 'del' ? await authzApi.demoUserDelete() : await authzApi.demoUserEdit()
+  if (res.code === 200) {
+    demoMsg.value = '✅ ' + res.msg
+  } else {
+    demoMsg.value = `❌ code=${res.code} ${res.msg}`
   }
 }
 

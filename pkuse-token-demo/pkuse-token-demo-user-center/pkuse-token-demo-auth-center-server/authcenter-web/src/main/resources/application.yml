@@ -1,0 +1,91 @@
+# ===================================================================
+#  Pkuse-Token 授权中心示例 - 后端公共配置（各环境通用）
+#  技术栈：SpringBoot3 + KingbaseES（独立库）+ MyBatis-Plus + Pkuse-Token(SSO-Client)
+#
+#  环境差异（端口 / 数据源 / Redis）见 application-{env}.yml：
+#  dev（开发，默认）/ test（测试）/ uat（预发布）/ prod（生产）
+#  激活环境由打包时的 Maven profile 决定（mvn package -P dev|test|uat|prod），
+#  运行时可被 --spring.profiles.active=xxx 覆盖。
+# ===================================================================
+spring:
+  application:
+    name: pkuse-token-demo-auth-center-server
+
+  # 激活的环境配置：application-{profile}.yml（@profiles.active@ 由 Maven 资源过滤替换）
+  profiles:
+    active: @profiles.active@
+
+  # ------------------- 数据源连接池：Druid -------------------
+  # 连接信息（url / username / password）在各环境配置文件中定义；url 使用 jdbc:p6spy: 前缀（部门标准强制）
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 2
+      min-idle: 2
+      max-active: 10
+      max-wait: 30000
+      validation-query: SELECT 1
+      test-while-idle: true
+      test-on-borrow: false
+      test-on-return: false
+      time-between-eviction-runs-millis: 300000
+      min-evictable-idle-time-millis: 1800000
+
+# ------------------- MyBatis-Plus -------------------
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+  global-config:
+    banner: false
+    db-config:
+      id-type: assign_uuid
+
+# ------------------- Pkuse-Token 认证配置 -------------------
+sa-token:
+  # 打印操作日志
+  is-log: true
+  # token 名称（Cookie 名 / 请求头名）：
+  #   ticket 模式（默认）必须独立命名，防止同域部署时覆盖用户中心的 satoken Cookie；
+  #   simple 模式必须改为 satoken（与用户中心共享 Cookie 的前提）。
+  #   启动时会校验与 integration-mode 的组合合法性（SaTokenConfigure#checkModeAndTokenName）。
+  token-name: authcenter-token
+  # token 有效期（秒），默认 30 天
+  timeout: 2592000
+  # token 最低活跃频率（秒），-1 代表不限制
+  active-timeout: -1
+  # 是否允许同一账号多地同时登录
+  is-concurrent: true
+  # 同一账号再次登录时是否复用已发 token
+  #   必须为 true：false 时新登录会踢掉旧会话，浏览器两条重叠的 SSO 登录链路会互踢
+  #   （工作台入口跳转与登录页自动跳转），表现为反复卡在「正在检测登录态」
+  is-share: true
+  # token 风格
+  token-style: uuid
+
+  # ------------------- SSO-Client 配置（接入用户中心）-------------------
+  # 应用标识与密钥须与用户中心「应用管理」中的登记一致（db/upgrade-v10-auth-center.sql）；
+  # 密钥同时用于签名调用用户中心 /open/registry/* 开放接口
+  sso-client:
+    client: auth-center
+    server-url: http://localhost:9000
+    secret-key: SSO-AC-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
+    # ticket 模式：HTTP 接口向用户中心校验 ticket（若与用户中心恰好同 Redis 可改 false 直读）
+    is-http: true
+
+# ------------------- 授权中心自定义配置 -------------------
+auth-center:
+  sso:
+    # SSO 对接模式：ticket（默认，模式二/三式，任意拓扑通用）/ simple（模式一式：同域 + 同 Redis）
+    # ★ 切换 simple 模式时须同时：token-name 改为 satoken、按 application-dev.yml 注释打开 alone-redisson
+    integration-mode: ticket
+  registry:
+    # 应用注册表定时刷新（从用户中心拉取应用清单与密钥，维护本地缓存）
+    refresh-cron: "0 */5 * * * ?"
+  user-center:
+    # 用户中心后端地址（应用注册表 / 用户查询接口）
+    base-url: http://localhost:9000
+
+# ------------------- 运行监控：JavaMelody（部门标准强制）-------------------
+javamelody:
+  enabled: true

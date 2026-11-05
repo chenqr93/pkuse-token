@@ -19,6 +19,13 @@ public class UserVO implements Serializable {
     private String email;
     private String phone;
     private String role;
+
+    /** 所属组织 ID（为空表示未归属） */
+    private String orgId;
+
+    /** 所属组织名称（列表展示用，非数据库字段，由接口批量回填） */
+    private String orgName;
+
     private Integer status;
     private String remark;
     private LocalDateTime lastLoginTime;
@@ -55,6 +62,7 @@ public class UserVO implements Serializable {
         vo.setEmail(user.getEmail());
         vo.setPhone(user.getPhone());
         vo.setRole(user.getRole());
+        vo.setOrgId(user.getOrgId());
         vo.setStatus(user.getStatus());
         vo.setRemark(user.getRemark());
         vo.setLastLoginTime(user.getLastLoginTime());
@@ -113,6 +121,22 @@ public class UserVO implements Serializable {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getOrgId() {
+        return orgId;
+    }
+
+    public void setOrgId(String orgId) {
+        this.orgId = orgId;
+    }
+
+    public String getOrgName() {
+        return orgName;
+    }
+
+    public void setOrgName(String orgName) {
+        this.orgName = orgName;
     }
 
     public Integer getStatus() {
@@ -212,6 +236,8 @@ public class UserVO implements Serializable {
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", role='" + role + '\'' +
+                ", orgId='" + orgId + '\'' +
+                ", orgName='" + orgName + '\'' +
                 ", status=" + status +
                 ", remark='" + remark + '\'' +
                 ", lastLoginTime=" + lastLoginTime +

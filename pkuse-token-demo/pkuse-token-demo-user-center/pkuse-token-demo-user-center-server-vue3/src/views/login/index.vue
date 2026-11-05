@@ -198,7 +198,7 @@ onMounted(async () => {
   // 获取 SM2 公钥（国密，用于密码传输加密；获取失败时退化为明文传输）
   try {
     const res = await authApi.publicKey()
-    publicKey.value = res.data || ''
+    publicKey.value = res.data?.publicKey || ''
   } catch (e) {
     publicKey.value = ''
   }
@@ -324,7 +324,9 @@ async function doLogin() {
     captchaPassed.value = false
     captchaDialogVisible.value = false
     deviceVerify.value = null
-    saveLoginState(res.data.token, res.data.user)
+    // 用户信息与角色拆分：登录后再拉取平台角色（管理端显隐判断用）
+    const rolesRes = await authApi.myRoles().catch(() => null)
+    saveLoginState(res.data.token, res.data.user, rolesRes?.data || [])
     ElMessage.success('登录成功')
     // 规则配置 - 首次登录强制修改密码：先进入改密页
     if (await handleMustChangePassword(res.data)) {
@@ -401,7 +403,9 @@ async function onVerifyDevice() {
   loading.value = true
   try {
     const res = await authApi.verifyDevice(deviceVerify.value.verifyToken, verifyCode.value)
-    saveLoginState(res.data.token, res.data.user)
+    // 用户信息与角色拆分：登录后再拉取平台角色（管理端显隐判断用）
+    const rolesRes = await authApi.myRoles().catch(() => null)
+    saveLoginState(res.data.token, res.data.user, rolesRes?.data || [])
     ElMessage.success('验证通过，已绑定新设备')
     deviceVerify.value = null
     if (await handleMustChangePassword(res.data)) {

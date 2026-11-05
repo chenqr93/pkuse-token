@@ -22,6 +22,8 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * SSO-Server（认证中心）配置
@@ -88,17 +90,19 @@ public class SsoServerConfigure {
         };
 
         // 3、为 Client 端开放 userinfo 消息：Client 可通过 SSO 协议拉取登录用户资料
+        //    （纯身份信息，不含角色——认证/授权职责拆分：应用内角色由应用经授权中心客户端
+        //     starter 调 /open/authz/roles 按客户端获取，认证中心不再依赖授权中心）
         ssoServerTemplate.messageHolder.addHandle("userinfo", (template, message) -> {
             String loginId = toStringOrNull(message.get("loginId"));
             if (loginId == null) {
                 return PkuseResult.error("缺少 loginId 参数");
             }
             UcUser user = userService.getByIdOrThrow(loginId);
-            return PkuseResult.ok()
-                    .set("id", user.getId())
-                    .set("username", user.getUsername())
-                    .set("nickname", user.getNickname())
-                    .set("role", user.getRole());
+            Map<String, Object> info = new LinkedHashMap<>();
+            info.put("id", user.getId());
+            info.put("username", user.getUsername());
+            info.put("nickname", user.getNickname());
+            return PkuseResult.ok().setData(info);
         });
     }
 

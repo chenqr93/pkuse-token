@@ -108,7 +108,7 @@ onMounted(async () => {
   }
   try {
     const res = await authApi.publicKey()
-    publicKey.value = res.data || ''
+    publicKey.value = res.data?.publicKey || ''
   } catch (e) {
     publicKey.value = ''
   }

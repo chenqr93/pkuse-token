@@ -24,6 +24,15 @@ sa-token:
   # 打印操作日志
   is-log: true
 
+  # 独立 token 名（同域单端口部署适配，参考授权中心的 authcenter-token）：
+  # token-name 同时是 Cookie 名、请求参数名、Redis key 前缀。本应用会话在独立 Redis（db6），
+  # 若沿用默认 satoken，SSO 登录写下的 Cookie 会覆盖门户（用户中心，db5）的同名 Cookie，
+  # 导致门户登录态丢失；独立命名后 Cookie/请求头/key 前缀互不冲突，多客户端并存无影响。
+  # 前端（client3-vue3 的 api.js）请求头与注销参数名已同步使用 client3-token。
+  # 注：client1（模式一，须与认证中心共享 satoken Cookie）与 client2（模式二，共享 db5，
+  # ticket 直读依赖相同 key 前缀）不适用独立命名。
+  token-name: client3-token
+
   # SSO-Client 配置
   sso-client:
     # 应用标识（需与用户中心「应用管理」中的登记一致）
@@ -34,3 +43,18 @@ sa-token:
     secret-key: SSO-C3-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
     # 模式三：使用 HTTP 请求向认证中心校验 ticket
     is-http: true
+
+# ------------------- 授权中心客户端（RBAC 权限层）-------------------
+# 登录层走上方 SSO（用户中心）；权限层走授权中心（拉菜单/权限码），两层解耦。
+# starter 自动：签名调用 /open/authz/*、按 loginId 缓存（TTL 60s，故障时 30 分钟内沿用陈旧数据）、
+# 适配 StpInterface（StpUtil.checkPermission / @PkuseCheckPermission 可用）、暴露 /authz/menus 与 /authz/perms 给前端。
+auth-center:
+  client:
+    base-url: http://localhost:9010
+    client: sso-client3
+    secret-key: SSO-C3-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
+    cache-ttl-seconds: 60
+    max-stale-seconds: 1800
+    expose-endpoints: true
+    path-prefix: /authz
+

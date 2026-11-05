@@ -6,6 +6,7 @@ import com.bdsoft.usercenter.log.dto.LoginLogQueryDTO;
 import com.bdsoft.usercenter.log.po.UcLoginLog;
 import com.bdsoft.usercenter.log.service.LoginLogService;
 import com.bdsoft.usercenter.log.vo.LoginLogVO;
+import com.bdsoft.usercenter.common.pojo.PageData;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,11 +33,7 @@ public class LoginLogController {
     public PkuseResult page(LoginLogQueryDTO query) {
         Page<UcLoginLog> page = loginLogService.pageQuery(query);
         List<LoginLogVO> records = page.getRecords().stream().map(LoginLogVO::from).toList();
-        return PkuseResult.ok()
-                .set("total", page.getTotal())
-                .set("current", page.getCurrent())
-                .set("size", page.getSize())
-                .setData(records);
+        return PkuseResult.ok().setData(PageData.of(records, page.getTotal(), page.getCurrent(), page.getSize()));
     }
 
 }

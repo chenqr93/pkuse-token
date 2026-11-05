@@ -8,6 +8,8 @@ import { getToken, isAdmin } from '../utils/auth'
  * /login      统一登录页（认证中心登录入口，支持 SSO redirect 回跳）
  * /workbench  工作台（所有登录用户可见；普通用户仅展示已授权应用入口）
  * /user       用户管理（仅系统管理员）
+ * /org        组织架构管理（仅系统管理员）
+ * /region     区划管理（仅系统管理员）
  * /client     应用管理（仅系统管理员）
  * /config     规则配置（仅系统管理员）
  * /password   修改密码（所有登录用户；开启「首次登录强制修改密码」时由登录页引导进入）
@@ -35,6 +37,18 @@ const routes = [
         name: 'user',
         component: () => import('../views/user/index.vue'),
         meta: { title: '用户管理', icon: 'User', admin: true }
+      },
+      {
+        path: 'org',
+        name: 'org',
+        component: () => import('../views/org/index.vue'),
+        meta: { title: '组织架构', icon: 'OfficeBuilding', admin: true }
+      },
+      {
+        path: 'region',
+        name: 'region',
+        component: () => import('../views/region/index.vue'),
+        meta: { title: '区划管理', icon: 'MapLocation', admin: true }
       },
       {
         path: 'client',

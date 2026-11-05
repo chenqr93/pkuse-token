@@ -6,8 +6,10 @@ export const authApi = {
   login: (data) => request.post('/api/auth/login', data),
   /** 退出登录 */
   logout: () => request.post('/api/auth/logout'),
-  /** 当前登录用户 */
+  /** 当前登录用户（纯身份信息，不含角色） */
   me: () => request.get('/api/auth/me'),
+  /** 当前登录用户的平台角色（管理端显隐判断；用户信息与角色拆分后单独获取） */
+  myRoles: () => request.get('/api/auth/my-roles'),
   /** 获取滑块验证码 */
   captcha: () => request.get('/api/auth/captcha'),
   /** 查询账号当前是否需要滑块验证码 */
@@ -48,6 +50,26 @@ export const userApi = {
   /** 解绑设备 */
   unbindDevice: (id, deviceId) =>
     request.delete(`/api/user/${id}/devices`, { params: { deviceId } })
+}
+
+/** 组织架构管理（仅系统管理员） */
+export const orgApi = {
+  /** 组织架构树（可选过滤：orgName / shortName 模糊、orgLevel 精确；返回树 + count） */
+  tree: (params) => request.get('/api/org/tree', { params }),
+  create: (data) => request.post('/api/org', data),
+  update: (data) => request.put('/api/org', data),
+  remove: (id) => request.delete(`/api/org/${id}`)
+}
+
+/** 区划管理（仅系统管理员） */
+export const regionApi = {
+  /** 分页查询（keyword 任一层级名称模糊或最终编码前缀；provinceCode 精确；finalLevel 精确） */
+  page: (params) => request.get('/api/region/page', { params }),
+  /** 级联下一级选项（parentCode 为空返回省级列表；街道级返回空列表表示叶子） */
+  cascade: (parentCode) => request.get('/api/region/cascade', { params: { parentCode } }),
+  create: (data) => request.post('/api/region', data),
+  update: (data) => request.put('/api/region', data),
+  remove: (id) => request.delete(`/api/region/${id}`)
 }
 
 /** 登录日志（仅系统管理员） */

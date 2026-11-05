@@ -245,3 +245,30 @@ body {
 .error {
   color: #f56c6c;
 }
+
+/* 授权中心动态菜单演示 */
+.authz-menu {
+  border: 1px solid #e6e8eb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin: 8px 0;
+  background: #fafbfc;
+}
+
+.authz-dir-name {
+  font-weight: 600;
+  margin: 6px 0 4px;
+}
+
+.authz-page {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0 3px 18px;
+}
+
+.perm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}

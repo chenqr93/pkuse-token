@@ -146,9 +146,10 @@ async function handleLoginPage() {
 async function refresh() {
   try {
     const res = await ssoApi.isLogin()
-    isLogin.value = !!res.isLogin
-    loginId.value = res.loginId
-    token.value = res.token || getToken()
+    // isLogin 统一信封返回：业务字段在 data 内（data={isLogin,loginId,token}）
+    isLogin.value = !!res.data?.isLogin
+    loginId.value = res.data?.loginId
+    token.value = res.data?.token || getToken()
     if (!isLogin.value) {
       userInfo.value = null
     }

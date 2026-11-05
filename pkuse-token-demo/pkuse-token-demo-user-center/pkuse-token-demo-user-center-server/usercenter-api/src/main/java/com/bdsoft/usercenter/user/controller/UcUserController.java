@@ -3,6 +3,7 @@ package com.bdsoft.usercenter.user.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bdsoft.pkusetoken.util.PkuseResult;
 import com.bdsoft.usercenter.common.annotation.OperLog;
+import com.bdsoft.usercenter.common.pojo.PageData;
 import com.bdsoft.usercenter.authz.dto.ClientBatchBindDTO;
 import com.bdsoft.usercenter.user.dto.UserQueryDTO;
 import com.bdsoft.usercenter.user.dto.UserSaveDTO;
@@ -10,6 +11,7 @@ import com.bdsoft.usercenter.user.po.UcUser;
 import com.bdsoft.usercenter.auth.service.AuthService;
 import com.bdsoft.usercenter.authz.service.UcUserClientService;
 import com.bdsoft.usercenter.device.service.UcUserDeviceService;
+import com.bdsoft.usercenter.org.service.UcOrgUnitService;
 import com.bdsoft.usercenter.user.service.UcUserService;
 import com.bdsoft.usercenter.device.vo.DeviceVO;
 import com.bdsoft.usercenter.user.vo.UserVO;
@@ -24,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +49,9 @@ public class UcUserController {
     private UcUserDeviceService userDeviceService;
 
     @Resource
+    private UcOrgUnitService orgUnitService;
+
+    @Resource
     private AuthService authService;
 
     /** 分页查询 */
@@ -53,21 +59,20 @@ public class UcUserController {
     public PkuseResult page(UserQueryDTO query) {
         Page<UcUser> page = userService.pageQuery(query);
         List<UserVO> records = page.getRecords().stream().map(UserVO::from).toList();
-        // 补充「已授权应用数」「已绑定设备数」（批量查询，避免逐行查询）
+        // 补充「已授权应用数」「已绑定设备数」「所属组织名称」（批量查询，避免逐行查询）
         if (!records.isEmpty()) {
             List<String> userIds = records.stream().map(UserVO::getId).toList();
             Map<String, Integer> clientCounts = userClientService.countByUserIds(userIds);
             Map<String, Integer> deviceCounts = userDeviceService.countByUserIds(userIds);
+            Map<String, String> orgNames = orgUnitService.mapNamesByIds(
+                    records.stream().map(UserVO::getOrgId).toList());
             records.forEach(vo -> {
                 vo.setAuthClientCount(clientCounts.getOrDefault(vo.getId(), 0));
                 vo.setDeviceCount(deviceCounts.getOrDefault(vo.getId(), 0));
+                vo.setOrgName(orgNames.get(vo.getOrgId()));
             });
         }
-        return PkuseResult.ok()
-                .set("total", page.getTotal())
-                .set("current", page.getCurrent())
-                .set("size", page.getSize())
-                .setData(records);
+        return PkuseResult.ok().setData(PageData.of(records, page.getTotal(), page.getCurrent(), page.getSize()));
     }
 
     /** 查询单个用户 */
@@ -137,10 +142,12 @@ public class UcUserController {
         boolean append = ClientBatchBindDTO.MODE_APPEND.equalsIgnoreCase(param.getMode());
         int userCount = userClientService.batchBindClients(param.getUserIds(), param.getClientIds(), append);
         int clientCount = param.getClientIds() == null ? 0 : param.getClientIds().size();
-        return PkuseResult.ok("批量授权完成")
-                .set("userCount", userCount)
-                .set("clientCount", clientCount)
-                .set("mode", append ? ClientBatchBindDTO.MODE_APPEND : ClientBatchBindDTO.MODE_COVER);
+        // 统计信息收进 data
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("userCount", userCount);
+        data.put("clientCount", clientCount);
+        data.put("mode", append ? ClientBatchBindDTO.MODE_APPEND : ClientBatchBindDTO.MODE_COVER);
+        return PkuseResult.ok("批量授权完成").setData(data);
     }
 
     /** 管理员在线解锁：清除密码错误锁定状态与失败计数 */
