@@ -1,0 +1,31 @@
+{
+  "name": "user-center-web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "用户中心（统一认证中心 / SSO-Server）前端 - Vue 2.7 + Ant Design Vue 1.x",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "ant-design-vue": "1.6.4",
+    "axios": "1.7.7",
+    "core-js": "^3.18.3",
+    "sm-crypto": "^0.5.7",
+    "vue": "2.7.16",
+    "vue-router": "3.6.5"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.19",
+    "@vue/cli-plugin-eslint": "~4.5.19",
+    "@vue/cli-service": "~4.5.19",
+    "babel-eslint": "^10.1.0",
+    "babel-plugin-import": "^1.13.8",
+    "eslint": "^6.8.0",
+    "eslint-plugin-vue": "^6.2.2",
+    "less": "^2.7.3",
+    "less-loader": "^5.0.0",
+    "vue-template-compiler": "2.7.16"
+  }
+}

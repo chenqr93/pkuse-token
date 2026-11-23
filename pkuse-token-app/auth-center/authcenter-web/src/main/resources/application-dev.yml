@@ -1,0 +1,28 @@
+# ===================================================================
+#  开发环境配置（默认打包环境：mvn package 或 mvn package -P dev）
+# ===================================================================
+server:
+  port: 9010
+
+spring:
+  # ------------------- 数据源：独立库 PKUSE_TOKEN_AUTH_CENTER（p6spy 代理）-------------------
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:kingbase8://192.168.1.77:54321/DEV_AUTH
+    username: DEV_AUTH
+    password: Beid@s0ft
+
+  # ------------------- Redis：ticket 模式下的本地会话库（db9）-------------------
+  data:
+    redis:
+      database: 9
+      host: 192.168.1.75
+      port: 6379
+      password: bds0ft@2025
+      timeout: 10s
+    lettuce:
+      pool:
+        max-active: 200
+        max-wait: -1ms
+        max-idle: 10
+        min-idle: 0

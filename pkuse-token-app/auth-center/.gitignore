@@ -1,0 +1,17 @@
+# 构建产物
+target/
+*.class
+.flattened-pom.xml
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# 日志与临时文件
+logs/
+*.log
+.DS_Store

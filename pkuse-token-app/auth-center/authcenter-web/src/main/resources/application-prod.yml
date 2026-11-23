@@ -1,0 +1,23 @@
+# ===================================================================
+#  prod 环境配置（占位：按实际部署修改数据源/Redis/地址）
+# ===================================================================
+server:
+  port: 9010
+
+spring:
+  datasource:
+    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
+    url: jdbc:p6spy:kingbase8://192.168.1.77:54321/DEV_AUTH
+    username: DEV_AUTH
+    password: Beid@s0ft
+  data:
+    redis:
+      database: 8
+      host: 127.0.0.1
+      port: 6379
+      password: Beid@s0ft
+      timeout: 10s
+
+auth-center:
+  user-center:
+    base-url: http://127.0.0.1:9000

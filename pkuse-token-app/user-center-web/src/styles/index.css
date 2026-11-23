@@ -1,0 +1,53 @@
+/* 全局基础样式 */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  font-size: 14px;
+  color: #303133;
+  background-color: #f5f7fa;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 页面容器 */
+.page-container {
+  padding: 16px;
+}
+
+/* 查询工具条 */
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* 卡片间距 */
+.el-card + .el-card {
+  margin-top: 16px;
+}
+
+/* 表格外层的卡片 */
+.table-card {
+  margin-top: 16px;
+}
+
+.text-muted {
+  color: #909399;
+}
+
+.text-mono {
+  font-family: Consolas, Monaco, 'Courier New', monospace;
+}

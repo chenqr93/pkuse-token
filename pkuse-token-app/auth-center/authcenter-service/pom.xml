@@ -1,0 +1,78 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.bdsoft</groupId>
+    <artifactId>authcenter-service</artifactId>
+    <version>${revision}</version>
+    <packaging>jar</packaging>
+    <name>authcenter-service</name>
+    <description>授权中心 - 业务层：IService 接口 + ServiceImpl + Mapper + 注册表缓存/签名校验/用户中心对接支撑</description>
+
+    <parent>
+        <groupId>com.bdsoft</groupId>
+        <artifactId>zfw-auth-center</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <dependencies>
+
+        <!-- 内部模块 -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>authcenter-model</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>authcenter-common</artifactId>
+        </dependency>
+
+        <!-- MyBatis-Plus（starter 含 spring-jdbc / 分页；jsqlparser 为 3.5.9+ 分页插件独立模块，必需） -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+        </dependency>
+
+        <!-- AOP：操作日志切面（@OperLog + OperLogAspect）；排除默认 Logback，日志统一走 Log4j2（web 模块引入） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-logging</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!-- spring-web：操作日志切面经 RequestContextHolder 解析请求上下文（运行期由 web 容器提供） -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+
+        <!-- Servlet API（切面解析 IP / UA；由 Web 容器在运行期提供） -->
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- Pkuse-Token 认证框架 + SSO（会话 / SSO 客户端 / userinfo 消息 / PkuseTokenDao 缓存） -->
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-spring-boot3-starter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.bdsoft</groupId>
+            <artifactId>pkuse-token-sso</artifactId>
+        </dependency>
+
+    </dependencies>
+
+</project>
