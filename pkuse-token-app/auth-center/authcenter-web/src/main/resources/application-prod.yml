@@ -21,3 +21,10 @@ spring:
 auth-center:
   user-center:
     base-url: http://127.0.0.1:9000
+
+# ------------------- 接口文档（非 dev 环境关闭） -------------------
+springdoc:
+  api-docs:
+    enabled: false
+knife4j:
+  enable: false

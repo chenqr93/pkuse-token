@@ -250,3 +250,99 @@
 7. **文档**：更新模块 README（新接口、新配置项、新表）。
 
 修改已有代码时：保持既有风格（即使有更优写法），先读同包相邻文件再动手；错误信息、注释、日志全部使用中文。
+
+## 15. 接口文档（Knife4j / springdoc-openapi）
+
+- 依赖：web/api 模块引入 `knife4j-openapi3-jakarta-spring-boot-starter`（4.5.0，显式配套 springdoc-openapi-starter-webmvc-ui 2.7.0，Boot3/Jakarta）；
+- 文档配置：web 模块 `Knife4jConfiguration` 按**业务域分组**（GroupedOpenApi）+ OpenAPI 元信息；
+- 端点：文档 UI `/doc.html`（Knife4j）、原始描述 `/v3/api-docs/{group}`（供 Apifox/Postman 导入）；
+- 登录拦截放行：文档端点在 SaTokenConfigure 中统一 excludePathPatterns（非 dev 环境在 yml 关闭 springdoc/knife4j）；
+- Controller 可选标注 `@Tag/@Operation/@Schema`（springdoc 注解）细化文档；未标注时按类/方法名自动生成，仍可用；
+- 禁止事项不变：**禁止重新引入 swagger 2.x / springfox**（与 Boot3 不兼容且与本条冲突）。
+
+> 本节为 2026-11-20 联调便利化新增，覆盖前文“接口文档靠 Javadoc 清单”的约定：Javadoc 清单仍保留（对外契约），Knife4j 作为联调调试入口。
+
+## 16. 代码表与字典编码规范（部门标准）
+
+- **数据字典分两类**：
+  1. **国标基础元数据**（性别/民族/证件类型等）：遵循对应国标的**原始编码**（如性别 GB/T 2261.1 → 1 男/2 女/9 未说明；民族 GB 3304 → 01 汉族…56+），不得自行编造；
+  2. **其他业务代码表**：选项代码统一**两位字符串编码**（'01','02','03'…，保留前导零），**禁止英文单词作为代码值**；
+- 落点：`wf_dict_option.code`（字典选项）、`wf_category.key`（业务类型）、信息项分类 `category`（'01' 办理/'02' 审核）、办理方式 `flow_mode`（'01' 走流程/'02' 不走流程）、问答类型 `type`（'01' 问题/'02' 答案）、当事人类型 `family`（'01' 自然人/'02' 法人/'03' 个体户/'04' 其他组织）等；
+- 种子数据（init.sql）与新增代码表一律按此规范；存量英文代码值已全量数字化；
+- **边界**：流程引擎协议标识（`route`/`actions`/BPMN 条件表达式/`assigneeType` 等 Flowable 交互内部值）为引擎协议约定，不受本条约束；
+- 前端下拉/单选/复选的选项 value 与后端存储值保持同编码；选项显示名一律中文。
+
+> 本节为 2026-11-22 联调阶段新增（评审补充），覆盖 init.sql 头部注释中的同款规范。
+
+## 17. 阿里巴巴 Java 开发手册对照（强制规约摘编）
+
+> 前后端所有 Java 代码**严格遵守《阿里巴巴 Java 开发手册》（黄山版）**：本节为高频条款摘编，与前述章节共同生效（冲突时以更严格者为准）；标注【增量】的条款为本工程需要特别注意、此前章节未展开的；标注（已符合）的为本工程结构天然满足的。
+
+### 编程规约
+
+**命名**
+1. 代码中的命名均**不能以下划线或美元符号开始/结束**（反例：`_name` / `$name` / `name_`）；
+2. 严禁使用拼音与英文混合命名，更不允许直接使用中文（国际通用的名称可视同英文，如 `internationalization`）；
+3. 类名使用 UpperCamelCase；方法名/参数名/成员变量/局部变量统一 lowerCamelCase；
+4. 常量全大写，单词间下划线隔开，力求语义完整（如 `MAX_STOCK_COUNT`）；
+5. 抽象类以 `Abstract` 或 `Base` 开头；异常类以 `Exception` 结尾；测试类以被测类名开头、`Test` 结尾；
+6. POJO 类中布尔类型变量**不要加 is 前缀**（数据库 `is_xxx` 列映射需在 `@TableField` 显式指定，本工程 PO 对应列名一致可直接映射）；
+7. 避免子父类成员变量之间、不同代码块局部变量之间完全相同的命名。
+
+**常量与格式**
+8. 禁止任何**魔法值**（未经定义的常量）直接出现在代码中；long 赋值使用大写 `L`；
+9. if/for/while/do 后必须加大括号，即使只有一行；右括号换行后左括号不另起新行；
+10. 单行字符数**不超过 120**，超出需换行（次行相对缩进 4 空格，运算符一起换行）；
+11. 注释双斜线与注释内容之间有且仅有一个空格；注释与代码相同缩进。
+
+**OOP 与集合**
+12. 避免通过对象引用访问静态成员，直接用类名；
+13. 所有过载方法功能必须相近；外部正在调用或二方库依赖的接口不允许修改方法签名——过时用 `@Deprecated` 并新增方法；
+14. Object 的 equals 易抛 NPE，用常量或确定有值的对象调用（`"test".equals(obj)`）；
+15. 所有 POJO 类属性使用**包装类型**；局部变量推荐基本类型；DO/DTO/VO 不设属性默认值（本工程 DTO/VO 已遵循）；
+16. POJO 类必须写 `toString`；继承 POJO 再写一遍 toString；
+17. 禁止 POJO 中同时存在对应属性 xxx 的 `isXxx()` 与 `getXxx()`；
+18. 循环体内字符串连接使用 **StringBuilder 的 append**（禁止 `+` 循环拼接）；
+19. 集合初始化时**指定初始容量**（估算元素数 + 扩容因子，如 `new HashMap<>(32)`）；【增量】
+20. `Arrays.asList` 产物不可 add/remove/clear；`subList` 不可强转 ArrayList；
+21. 遍历集合时移除元素必须使用 `Iterator.remove`（禁止 foreach 内 remove/add）；【增量】
+22. 去重场景用 `Set`（无需保序用 `HashSet`，需保序用 `LinkedHashSet`）；【增量】
+
+**并发**
+23. 线程资源必须由线程池提供（**禁止 `Executors` 创建**，用 `ThreadPoolExecutor` 显式指定核心/队列/拒绝策略）；【增量】
+24. `SimpleDateFormat` 线程不安全——日期格式化用 `DateTimeFormatter`（java.time）或 ThreadLocal 包装；【增量，本工程日期用 LocalDateTime+Jackson 序列化天然规避】
+25. 多线程共享资源加锁时，保证锁粒度一致（同一把锁对象）；阻塞锁 vs 非阻塞锁勿混用。
+
+**控制语句**
+26. switch 每个分支必须 `break`/`return`，必须有 `default`；括号内变量仅限 String/int/enum；
+27. 三目运算符 condition ? a : b 注意自动拆箱 NPE（两分支类型不一致时）；
+28. **超过 3 层的 if-else** 使用卫语句、策略模式、状态模式重构（本工程策略初值/校验清单可参考 Map+函数式分发）；【增量】
+
+**注释与其他**
+29. 抽象方法必须有 Javadoc（return/param/throws）；类/类成员/方法注释遵循本规范 §13（中文 Javadoc）；正则表达式 `Pattern.compile` 预编译为静态常量；【增量】
+
+### 异常与日志
+
+30. 捕获异常是为了处理它——**禁止捕获后不处理或仅打印**；要么处理、要么抛给调用者；
+31. 不要捕获 RuntimeException 及其子类做防御（IndexOutOfBoundsException/NPE 等，应预检查规避）；
+32. 事务代码 try 块中 catch 异常后**必须手动回滚**（本工程 @Transactional + rollbackFor 已约定）；
+33. **finally 中禁止 return**（会覆盖 try/catch 的返回）；
+34. 方法返回值可以为 null——**调用方必须做 NPE 判断**；高频 NPE 场景清单：基本类型 return 包装对象（自动拆箱）、数据库查询结果、`isNotEmpty` 后取出的集合元素、远程调用返回对象、级联调用 `obj.getA().getB()`；【增量，联调 Apifox 直调场景尤须注意】
+35. 避免重复代码（DRY）——必要抽取公共方法/组件；
+36. 异常**不要用于流程控制/条件控制**；
+37. 日志统一 SLF4J API（本工程 Log4j2 + `log.info("xx={}", obj)` 占位符），**禁止 `System.out`/`e.printStackTrace()`**；敏感信息（手机号/身份证/密钥）日志脱敏；【增量，本工程已在 GlobalExceptionHandler/会话服务落实】
+
+### 安全规约（增量）
+
+38. 用户输入一律后端校验（本工程 Service 层显式校验 + BizException 已约定）；SQL 用 MyBatis-Plus 参数绑定/预编译（**禁字符串拼接 SQL**，动态 SQL 走 XML `#{}` 参数绑定）；
+39. 文件上传校验扩展名+内容+大小，存储路径不透传用户输入（本工程 wf_file.path 为服务端生成）；
+40. 敏感信息（手机号/证件号/密钥）日志与返回值脱敏（用户中心 IdCardCipher 同款模式）。
+
+### MySQL/Kingbase 数据库（增量）
+
+41. 表达是与否的字段用 `is_xxx`、类型 unsigned tinyint（1 是 0 否）——本工程统一 SMALLINT/INT 0/1；
+42. 小数用 DECIMAL，禁 FLOAT/DOUBLE；varchar 长度按实际；索引名 `uk_`/`idx_`/`pk_` 前缀（本工程部分唯一索引约定已对齐）；
+43. `count(*)` 统计行数；NULL 与任何值比较均为 NULL——`IS NULL`/`IS NOT NULL` 判空；分页 LIMIT；
+44. 严禁小表驱动大表反序 join；隐式类型转换会使索引失效。
+
+> **落地方式**：新增/修改 Java 代码在 Code Review（AI Agent 自检 + 人工评审）时逐条对照本节；本节与 §2 技术栈、§13 编码风格共同构成 Java 编码基线。

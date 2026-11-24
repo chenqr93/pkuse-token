@@ -29,6 +29,9 @@ public class AuthCenterProperties {
     /** 用户中心对接配置 */
     private UserCenter userCenter = new UserCenter();
 
+    /** 开发免登录配置（仅 dev profile 配置；生产不配置即自动关闭） */
+    private DevAuth devAuth = new DevAuth();
+
     
     public static class Sso {
 
@@ -83,6 +86,39 @@ public class AuthCenterProperties {
         public void setBaseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
         }
+    }
+
+    public static class DevAuth {
+
+        /** 是否启用开发免登录（默认关闭） */
+        private boolean enabled = false;
+
+        /** 注入的登录 ID（内置管理员为 1） */
+        private String loginId = "1";
+
+        public boolean isEnabled() {
+            return enabled;
+        }
+
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+
+        public String getLoginId() {
+            return loginId;
+        }
+
+        public void setLoginId(String loginId) {
+            this.loginId = loginId;
+        }
+    }
+
+    public DevAuth getDevAuth() {
+        return devAuth;
+    }
+
+    public void setDevAuth(DevAuth devAuth) {
+        this.devAuth = devAuth;
     }
 
     public Sso getSso() {

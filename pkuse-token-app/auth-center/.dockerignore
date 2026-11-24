@@ -1,0 +1,3 @@
+*
+!authcenter-web/target/authcenter-exec.jar
+!Dockerfile

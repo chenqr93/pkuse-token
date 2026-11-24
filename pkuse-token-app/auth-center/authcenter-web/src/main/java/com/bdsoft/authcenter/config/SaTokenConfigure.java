@@ -3,23 +3,23 @@ package com.bdsoft.authcenter.config;
 import com.bdsoft.authcenter.common.config.AuthCenterProperties;
 import com.bdsoft.pkusetoken.interceptor.PkuseInterceptor;
 import com.bdsoft.pkusetoken.stp.StpUtil;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Pkuse-Token 拦截器配置
+ * Pkuse-Token 拦截器配置（simple 共享会话模式）
  *
  * <pre>
  *   1、/api/authz/** 下的控制台接口统一要求登录 + 系统管理员（role=admin，取自登录时
  *      缓存的用户中心平台角色），未登录返回 401、非管理员返回 403；
  *   2、/open/authz/**（签名开放接口）与 /sso/**（SSO 协议）放行，由各自机制自校验；
- *   3、启动时校验 SSO 模式与 token-name 的组合合法性（防 Cookie 覆盖陷阱，见设计文档风险 2）。
+ *   3、接口文档端点（/v3/api-docs、/doc.html、/swagger-ui）放行（非 dev 环境在 yml 关闭文档）；
+ *   4、dev 免登录（auth-center.dev-auth.enabled，仅 dev profile 配置开启）：拦截器自动注入
+ *      固定测试身份（内置管理员 1），前后端联调不再依赖用户中心登录链路。
  * </pre>
  */
 @Configuration
@@ -30,39 +30,36 @@ public class SaTokenConfigure implements WebMvcConfigurer {
     /** 平台管理员角色（与用户中心 uc_user.role 一致） */
     private static final String ROLE_ADMIN = "admin";
 
-    /** simple 模式必须沿用的用户中心 Cookie 名（共享 Cookie 的前提） */
-    private static final String SHARED_TOKEN_NAME = "satoken";
+    /** 接口文档相关端点（登录拦截放行） */
+    private static final String[] DOC_ENDPOINTS = {
+            "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/doc.html", "/webjars/**"
+    };
 
     private final AuthCenterProperties properties;
-    private final Environment environment;
 
-    public SaTokenConfigure(AuthCenterProperties properties, Environment environment) {
+    public SaTokenConfigure(AuthCenterProperties properties) {
         this.properties = properties;
-        this.environment = environment;
-    }
-
-    /** 启动校验：token-name 必须与 SSO 模式匹配，不匹配快速失败（从 Environment 读取，避免早于 SDK 注入） */
-    @PostConstruct
-    public void checkModeAndTokenName() {
-        String tokenName = environment.getProperty("sa-token.token-name", SHARED_TOKEN_NAME);
-        if (properties.getSso().isTicketMode()) {
-            if (SHARED_TOKEN_NAME.equals(tokenName)) {
-                throw new IllegalStateException("ticket 模式下 token-name 必须独立命名（如 authcenter-token）："
-                        + "沿用 satoken 会在同域部署时覆盖用户中心的 Cookie，导致用户中心会话丢失");
-            }
-        } else if (!SHARED_TOKEN_NAME.equals(tokenName)) {
-            throw new IllegalStateException("simple 模式下 token-name 必须沿用 satoken（与用户中心共享 Cookie 的前提），"
-                    + "当前为：" + tokenName);
-        }
-        log.info("SSO 对接模式：{}（token-name={}）",
-                properties.getSso().getIntegrationMode(), tokenName);
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 1、登录校验：控制台接口
+        // 0、dev 免登录（仅 dev profile 配置开启）：最先注册，未登录自动注入内置管理员身份
+        if (properties.getDevAuth().isEnabled()) {
+            registry.addInterceptor(new PkuseInterceptor(handler -> {
+                if (!StpUtil.isLogin()) {
+                    StpUtil.login(properties.getDevAuth().getLoginId());
+                }
+            }))
+                    .addPathPatterns("/api/**")
+                    .order(0);
+            log.warn("【开发免登录】已启用：/api/authz/** 请求自动以 {} 身份登录（严禁用于非 dev 环境）",
+                    properties.getDevAuth().getLoginId());
+        }
+
+        // 1、登录校验：控制台接口（接口文档端点放行）
         registry.addInterceptor(new PkuseInterceptor(handler -> StpUtil.checkLogin()))
-                .addPathPatterns("/api/authz/**");
+                .addPathPatterns("/api/authz/**")
+                .excludePathPatterns(DOC_ENDPOINTS);
 
         // 2、管理员校验：授权中心控制台仅系统管理员可用
         registry.addInterceptor(new PkuseInterceptor(handler -> StpUtil.checkRole(ROLE_ADMIN)))

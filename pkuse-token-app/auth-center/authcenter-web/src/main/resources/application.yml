@@ -46,10 +46,7 @@ sa-token:
   # 打印操作日志
   is-log: true
   # token 名称（Cookie 名 / 请求头名）：
-  #   ticket 模式（默认）必须独立命名，防止同域部署时覆盖用户中心的 satoken Cookie；
-  #   simple 模式必须改为 satoken（与用户中心共享 Cookie 的前提）。
-  #   启动时会校验与 integration-mode 的组合合法性（SaTokenConfigure#checkModeAndTokenName）。
-  token-name: authcenter-token
+  token-name: satoken
   # token 有效期（秒），默认 30 天
   timeout: 2592000
   # token 最低活跃频率（秒），-1 代表不限制
@@ -71,14 +68,12 @@ sa-token:
     server-url: http://localhost:9000
     secret-key: SSO-AC-kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
     # ticket 模式：HTTP 接口向用户中心校验 ticket（若与用户中心恰好同 Redis 可改 false 直读）
-    is-http: true
 
 # ------------------- 授权中心自定义配置 -------------------
 auth-center:
   sso:
-    # SSO 对接模式：ticket（默认，模式二/三式，任意拓扑通用）/ simple（模式一式：同域 + 同 Redis）
-    # ★ 切换 simple 模式时须同时：token-name 改为 satoken、按 application-dev.yml 注释打开 alone-redisson
-    integration-mode: ticket
+    # SSO 对接模式：simple（同域 + 共享 Redis 会话；satoken Cookie 直接生效，客户端零 SSO 端点）
+    integration-mode: simple
   registry:
     # 应用注册表定时刷新（从用户中心拉取应用清单与密钥，维护本地缓存）
     refresh-cron: "0 */5 * * * ?"

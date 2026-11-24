@@ -4,10 +4,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bdsoft</groupId>
-    <artifactId>zfw-auth-center</artifactId>
+    <artifactId>auth-center</artifactId>
     <version>${revision}</version>
     <packaging>pom</packaging>
-    <name>zfw-auth-center</name>
+    <name>auth-center</name>
     <description>Pkuse-Token 授权中心（分层多模块）：common / model / service / api / web</description>
 
     <parent>
@@ -37,6 +37,9 @@
         <revision>0.0.1-SNAPSHOT</revision>
         <java.version>17</java.version>
         <pkuse-token.version>1.46.1</pkuse-token.version>
+        <!-- 接口文档：Knife4j UI（springdoc-openapi 2.x，Boot3/Jakarta） -->
+        <knife4j.version>4.5.0</knife4j.version>
+        <springdoc.version>2.7.0</springdoc.version>
         <mybatis-plus.version>3.5.14</mybatis-plus.version>
         <kingbase.version>8.6.0</kingbase.version>
         <netty.version>4.1.135.Final</netty.version>
@@ -179,6 +182,28 @@
                 <groupId>net.bull.javamelody</groupId>
                 <artifactId>javamelody-spring-boot-starter</artifactId>
                 <version>${javamelody.version}</version>
+            </dependency>
+            <!-- pkuse-token 插件：开放接口验签（@PkuseCheckSign）+ 注解 AOP 织入 -->
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-sign</artifactId>
+                <version>${pkuse-token.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bdsoft</groupId>
+                <artifactId>pkuse-token-spring-aop</artifactId>
+                <version>${pkuse-token.version}</version>
+            </dependency>
+            <!-- 接口文档：Knife4j UI（springdoc-openapi 2.x） -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

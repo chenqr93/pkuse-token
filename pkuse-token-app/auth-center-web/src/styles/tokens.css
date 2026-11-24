@@ -1,0 +1,81 @@
+/* 智慧法治产品设计规范（旧）设计令牌 — 授权中心 */
+:root {
+  --pd-color-page-bg: #F7FBFF;
+  --pd-color-card-tint: #EFF6FE;
+  --pd-color-selected-bg: #C7E3FF;
+  --pd-color-selected: #4292F7;
+  --pd-color-primary-dark: #096AC9;
+  --pd-color-menu-bg: #003970;
+  --pd-color-menu-sub-bg: #002F5D;
+
+  --pd-color-white: #FFFFFF;
+  --pd-color-bg: #F9F9F9;
+  --pd-color-border: #F5F5F5;
+  --pd-color-border-light: #EFEFEF;
+  --pd-color-text-muted: #999999;
+  --pd-color-text-secondary: #666666;
+  --pd-color-text: #333333;
+
+  --pd-color-error: #EB5E6B;
+  --pd-color-warning: #FC9F35;
+  --pd-color-success: #3BB53C;
+  --pd-color-danger-deep: #E53232;
+
+  --pd-tag-info: #1890FF;
+  --pd-tag-info-bg: #E8F4FF;
+  --pd-tag-success: #46AF38;
+  --pd-tag-success-bg: #EFFFEC;
+  --pd-tag-error: #DA4545;
+  --pd-tag-error-bg: #FFE8E8;
+  --pd-tag-warning: #F57F00;
+  --pd-tag-warning-bg: #FFF2E5;
+  --pd-tag-alert: #F5B800;
+  --pd-tag-alert-bg: #FFF9E7;
+  --pd-tag-disabled: #AEAEAE;
+  --pd-tag-disabled-bg: #F6F6F6;
+
+  --pd-btn-radius: 2px;
+  --pd-btn-height: 32px;
+  --pd-btn-primary: #389AFE;
+  --pd-btn-primary-hover: #5FAEFF;
+  --pd-btn-primary-active: #187DE4;
+  --pd-btn-primary-disabled: #A4A4A4;
+  --pd-btn-secondary-border: #E4E4E4;
+  --pd-btn-danger-border: #DF2020;
+  --pd-btn-danger-hover: #FF8181;
+
+  --pd-control-height: 32px;
+  --pd-control-border: #DCDFE6;
+  --pd-control-hover-border: #C0C4CC;
+  --pd-control-focus-shadow: 0 0 0 2px #B7DDFF;
+  --pd-control-disabled-bg: #F5F5F5;
+  --pd-control-error-border: #DF2020;
+
+  --pd-table-header-bg: #F6F6F6;
+  --pd-table-header-alt-bg: #EDEDED;
+  --pd-table-header-height: 50px;
+  --pd-table-row-height: 50px;
+  --pd-table-selected-bg: #E6F3FF;
+  --pd-table-striped-bg: #FAFAFA;
+
+  --pd-font-family: "Source Han Sans CN", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB", SimSun, Hei, sans-serif;
+
+  --pd-sider-width: 220px;
+  --pd-sider-collapsed-width: 80px;
+  --pd-logo-height: 60px;
+  --pd-header-height: 60px;
+  --pd-content-padding: 16px;
+  --pd-section-gap: 12px;
+  --pd-card-radius: 4px;
+  --pd-card-padding: 20px;
+  --pd-modal-radius: 4px;
+  --pd-shadow-header: 0 1px 4px rgba(0, 47, 93, 0.08);
+  --pd-shadow-popup: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+  --pd-space-xs: 4px;
+  --pd-space-sm: 8px;
+  --pd-space-md: 12px;
+  --pd-space-lg: 16px;
+  --pd-space-xl: 20px;
+  --pd-space-xxl: 24px;
+}

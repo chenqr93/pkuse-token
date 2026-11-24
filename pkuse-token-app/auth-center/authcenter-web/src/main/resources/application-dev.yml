@@ -8,8 +8,8 @@ spring:
   # ------------------- 数据源：独立库 PKUSE_TOKEN_AUTH_CENTER（p6spy 代理）-------------------
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    url: jdbc:p6spy:kingbase8://192.168.1.77:54321/DEV_AUTH
-    username: DEV_AUTH
+    url: jdbc:p6spy:kingbase8://192.168.1.77:54321/DEV_FZZT_AUTH
+    username: DEV_FZZT_AUTH
     password: Beid@s0ft
 
   # ------------------- Redis：ticket 模式下的本地会话库（db9）-------------------
@@ -26,3 +26,16 @@ spring:
         max-wait: -1ms
         max-idle: 10
         min-idle: 0
+
+# ------------------- 开发免登录（联调便利，仅 dev） -------------------
+auth-center:
+  dev-auth:
+    enabled: true
+    login-id: "1"
+
+# ------------------- 接口文档（Knife4j UI：/doc.html） -------------------
+springdoc:
+  api-docs:
+    enabled: true
+knife4j:
+  enable: true
