@@ -1,0 +1,53 @@
+package com.bdsoft.usercenter.vo.auth;
+
+import java.io.Serializable;
+
+/**
+ * 登录结果视图对象（登录 / 新设备验证通过后返回给前端）
+ */
+public class LoginVO implements Serializable {
+
+    private static final long serialVersionUID = 1L;
+
+    /** token 值：前端存 localStorage，请求时放入 satoken 请求头 */
+    private String token;
+
+    /** 登录用户信息（纯身份，不含角色；平台角色另走 /api/auth/my-roles） */
+    private MeVO user;
+
+    /** 是否需要修改密码（规则配置 - 首次登录强制修改密码）：前端据此引导用户先修改密码 */
+    private Boolean mustChangePassword;
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public MeVO getUser() {
+        return user;
+    }
+
+    public void setUser(MeVO user) {
+        this.user = user;
+    }
+
+    public Boolean getMustChangePassword() {
+        return mustChangePassword;
+    }
+
+    public void setMustChangePassword(Boolean mustChangePassword) {
+        this.mustChangePassword = mustChangePassword;
+    }
+
+    @Override
+    public String toString() {
+        return "LoginVO{" +
+                "token='" + token + '\'' +
+                ", user=" + user +
+                ", mustChangePassword=" + mustChangePassword +
+                '}';
+    }
+}

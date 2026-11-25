@@ -59,12 +59,12 @@
   mvn -f {app}-web/pom.xml spring-boot:run  # 开发热启动（需先 install）
   ```
 
-## 4. 包结构与命名（域优先）
+## 4. 包结构与命名（层优先）
 
-- 包结构：`com.bdsoft.{app}.{域}.{层}`。层后缀固定：
+- 包结构：`com.bdsoft.{app}.{层}.{域}`。层前缀固定：
   `controller`（api 模块）、`service` + `service.impl`、`mapper`、`support`（service 模块）、
   `po` / `bo` / `dto` / `vo`（model 模块）；公共的放 common 模块对应包。
-- 业务域按功能划分（如 auth 认证 / user 用户 / client 应用 / authz 授权 / device 设备 / log 日志 / config 配置 / dashboard 聚合）。
+- 业务域按功能划分（如 auth 认证 / user 用户 / client 应用 / authz 授权 / device 设备 / log 日志 / config 配置 / dashboard 聚合），作为层包下的子包；横切代码（security 等）不带域段，直接挂在 `{app}` 下。
 - 类命名约定：
   - 表实体：`Uc` 前缀 + 业务名（如 `UcUser`、`UcClient`），对应表 `uc_xxx`（前缀可按应用调整，但表名与 PO 名保持一致映射）。
   - Service 接口 `XxxService`、实现 `XxxServiceImpl`、Mapper `XxxMapper`、Controller `XxxController`。

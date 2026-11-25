@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.bdsoft.pkusetoken.stp.StpUtil;
-import com.bdsoft.usercenter.log.support.OperChangeCaptureInterceptor;
+import com.bdsoft.usercenter.support.log.OperChangeCaptureInterceptor;
 import org.apache.ibatis.mapping.DatabaseIdProvider;
 import org.apache.ibatis.mapping.VendorDatabaseIdProvider;
 import org.apache.ibatis.reflection.MetaObject;

@@ -6,7 +6,7 @@ import cloud.tianai.captcha.application.TACBuilder;
 import cloud.tianai.captcha.common.constant.CaptchaTypeConstant;
 import cloud.tianai.captcha.resource.common.model.dto.Resource;
 import cloud.tianai.captcha.resource.impl.LocalMemoryResourceStore;
-import com.bdsoft.usercenter.auth.support.LocalMemoryCacheStoreHolder;
+import com.bdsoft.usercenter.support.auth.LocalMemoryCacheStoreHolder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

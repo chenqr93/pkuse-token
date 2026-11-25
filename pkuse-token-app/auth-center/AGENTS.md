@@ -24,9 +24,9 @@
 ```
 {app}-server/                  # 聚合父 POM（packaging=pom，${revision} + flatten）
 ├── {app}-common/              # 通用层（零内部依赖叶子）：annotation / config / exception / pojo / util
-├── {app}-model/               # 数据模型层：{域}.{po,bo,dto,vo}
-├── {app}-service/             # 业务层：Service 接口 + impl + Mapper（含自定义 XML）+ support 域内支撑
-├── {app}-api/                 # 对外接口层：{域}.controller（入参 DTO、出参 VO）
+├── {app}-model/               # 数据模型层：{po,bo,dto,vo}.{域}
+├── {app}-service/             # 业务层：mapper.{域} + service.{域}（接口 + impl）+ support.{域} 跨域支撑
+├── {app}-api/                 # 对外接口层：controller.{域}（入参 DTO、出参 VO）
 └── {app}-web/                 # 启动与装配：启动类 / config / handler / application*.yml / db 脚本（可执行 jar）
 ```
 
@@ -35,7 +35,7 @@
 - 各模块职责：
   - **common**：自定义注解、`BizException` 业务异常、工具类、分页基类 `PageQueryDTO`、审计父类 `AbstractAuditPO`、平台配置定义（`@ConfigurationProperties` 类）。除注解级依赖（如 `mybatis-plus-annotation`、`bcprov`）外不引重依赖。
   - **model**：纯数据模型，**零逻辑**（仅允许 `VO.from(Entity)` 转换工厂与常量）。
-  - **service**：`XxxService extends IService<Entity>` + `XxxServiceImpl extends ServiceImpl<XxxMapper, Entity>`；`XxxMapper extends BaseMapper<Entity>`；域内支撑组件放 `{域}.support`（切面/拦截器/缓存组件）。
+  - **service**：`XxxService extends IService<Entity>` + `XxxServiceImpl extends ServiceImpl<XxxMapper, Entity>`；`XxxMapper extends BaseMapper<Entity>`；跨域支撑组件放 `support.{域}`（切面/拦截器/缓存组件，如 `support.security`）。
   - **api**：仅 Controller，轻量编排与 DTO/VO 转换，**不写业务规则**。
   - **web**：启动类 `@SpringBootApplication`、`config/` 装配（MyBatis-Plus、Sa-Token、验证码、HttpTemplate 等）、`handler/GlobalExceptionHandler`、`application*.yml`、`log4j2-spring.xml` + `spy.properties`（日志与 SQL 监控）、`db/` 脚本、`assembly/` 部署描述。
 
@@ -59,12 +59,12 @@
   mvn -f {app}-web/pom.xml spring-boot:run  # 开发热启动（需先 install）
   ```
 
-## 4. 包结构与命名（域优先）
+## 4. 包结构与命名（层优先）
 
-- 包结构：`com.bdsoft.{app}.{域}.{层}`。层后缀固定：
+- 包结构：`com.bdsoft.{app}.{层}.{域}`。层前缀固定：
   `controller`（api 模块）、`service` + `service.impl`、`mapper`、`support`（service 模块）、
   `po` / `bo` / `dto` / `vo`（model 模块）；公共的放 common 模块对应包。
-- 业务域按功能划分（如 auth 认证 / user 用户 / client 应用 / authz 授权 / device 设备 / log 日志 / config 配置 / dashboard 聚合）。
+- 业务域按功能划分（如 auth 认证 / user 用户 / client 应用 / authz 授权 / device 设备 / log 日志 / config 配置 / dashboard 聚合），作为层包下的子包；跨域支撑代码放 `support.{域}`（如 `support.security` 安全支撑、`support.usercenter` 用户中心对接支撑）。
 - 类命名约定：
   - 表实体：`Uc` 前缀 + 业务名（如 `UcUser`、`UcClient`），对应表 `uc_xxx`（前缀可按应用调整，但表名与 PO 名保持一致映射）。
   - Service 接口 `XxxService`、实现 `XxxServiceImpl`、Mapper `XxxMapper`、Controller `XxxController`。
@@ -136,7 +136,7 @@
 
 - RESTful 风格：`GET /api/{域}/page` 分页、`GET /api/{域}/{id}` 详情、`POST` 新增、`PUT` 修改、`DELETE /{id}` 删除；子资源/动作用路径后缀（如 `PUT /{id}/status`、`PUT /{id}/password`）。
 - 类上 `@RestController + @RequestMapping("/api/{域}")`；方法上单行 Javadoc 说明用途。
-- **管理动作必须标注 `@OperLog(module = "xxx管理", action = "yyy")`**（注解定义在 common，切面在 service 域 support 中自动记录，写日志异常不影响业务）。
+- **管理动作必须标注 `@OperLog(module = "xxx管理", action = "yyy")`**（注解定义在 common，切面在 service 模块 `support.{域}` 中自动记录，写日志异常不影响业务）。
 - 分页标准写法：查询 DTO 继承 `PageQueryDTO`（含 `currentOrDefault()/sizeOrDefault()` 规范化），
   Service 返回 `Page<Entity>`，Controller 转 `List<VO>` 后用
   `PkuseResult.ok().set("total", ...).set("current", ...).set("size", ...).setData(records)` 返回。
